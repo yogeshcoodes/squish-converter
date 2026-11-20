@@ -1,457 +1,2844 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data:; media-src blob:; connect-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'">
-<meta name="referrer" content="no-referrer">
-<title>Squish &amp; Shape · private file converter</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f4e8d3;--dot:#e0cfb0;--card:#fbf3e4;--ink:#3b2a22;--mut:#7a6455;--c1:#d9774f;--c2:#8fae8b;--c3:#e9b949;--c4:#7aa6c2;--c5:#b98ab5;--w1:255px 18px 225px 18px/18px 225px 18px 255px;--w2:18px 255px 18px 225px/225px 18px 255px 18px;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241c19;--dot:#33292409;--card:#352a25;--ink:#f6ead6;--mut:#c2ad98;--c1:#e08a63;--c2:#9dbb99;--c3:#efc25a;--c4:#8db5cf;--c5:#c59cc1}}
-:root[data-theme="dark"]{--bg:#241c19;--dot:#33292409;--card:#352a25;--ink:#f6ead6;--mut:#c2ad98;--c1:#e08a63;--c2:#9dbb99;--c3:#efc25a;--c4:#8db5cf;--c5:#c59cc1}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*,*::before,*::after{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--bg) radial-gradient(var(--dot) 1.4px,transparent 1.6px) 0 0/22px 22px;color:var(--ink);font:1.15rem/1.45 'Patrick Hand','Comic Sans MS',cursive;overflow-x:hidden}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
-.wrap{max-width:980px;margin:0 auto;padding:clamp(14px,4vw,40px) clamp(12px,4vw,28px) 60px}
-h1,h2{font-family:Caveat,'Segoe Print',cursive;margin:0;line-height:1}
-h1{font-size:clamp(2.8rem,10vw,5rem);transform:rotate(-1.5deg);display:inline-block}
-h1 em{font-style:normal;color:var(--c1)}
-.sub{max-width:34ch;margin:.4rem 0 1rem;color:var(--mut);font-size:1.25rem}
-.steps{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 22px;padding:0;list-style:none}
-.steps li{display:flex;align-items:center;gap:8px}
-.steps b{display:grid;place-items:center;width:34px;height:34px;border:3px solid var(--ink);border-radius:50%;background:var(--c3);color:#3b2a22;font-family:Caveat,cursive;font-size:1.4rem}
-.clay{border:3px solid var(--ink);border-radius:var(--w1);box-shadow:5px 5px 0 var(--ink),inset -4px -6px 0 rgba(0,0,0,.13),inset 4px 5px 0 rgba(255,255,255,.3);transition:transform .14s,box-shadow .14s}
-button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-:focus-visible{outline:3px dashed var(--c4);outline-offset:3px}
-.tabs{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:22px}
-.tab{flex:1 1 150px;min-height:52px;padding:8px 16px;background:var(--tc);color:#3b2a22;font-size:1.2rem}
-.tab:nth-child(even){border-radius:var(--w2)}
-.tab:hover{transform:translate(-1px,-3px) rotate(-1deg)}
-.tab[aria-selected=true]{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--ink),inset -4px -6px 0 rgba(0,0,0,.18),inset 4px 5px 0 rgba(255,255,255,.3)}
-.panel{background:var(--card);border:3px solid var(--ink);border-radius:var(--w2);box-shadow:8px 8px 0 var(--ink);padding:clamp(16px,4vw,32px)}
-.hint{margin:0 0 14px;color:var(--mut)}
-.dz{display:grid;place-items:center;gap:4px;min-height:150px;padding:20px;text-align:center;background:var(--tc);color:#3b2a22;cursor:pointer;border-style:dashed}
-.dz b{font:700 1.9rem Caveat,cursive}
-.dz:hover,.dz.over{transform:rotate(-.8deg) scale(1.015)}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
-.chip{display:flex;align-items:center;gap:6px;max-width:100%;padding:4px 6px 4px 12px;border:2px solid var(--ink);border-radius:30px;background:var(--bg)}
-.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
-.chip button{width:28px;height:28px;border:2px solid var(--ink);border-radius:50%;background:var(--c1);color:#3b2a22;line-height:1;padding:0}
-.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px;margin:22px 0}
-.fld>label{display:block;font:700 1.4rem Caveat,cursive;margin-bottom:4px}
-.sel{position:relative}
-.sel-b{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:50px;padding:8px 16px;background:var(--card);text-align:left}
-.sel-b:hover{transform:translate(-1px,-2px)}
-.car{font-style:normal;transition:transform .15s}
-.sel.open .car{transform:rotate(180deg)}
-.sel-l{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 8px);margin:0;padding:6px;list-style:none;max-height:260px;overflow:auto;background:var(--card);border:3px solid var(--ink);border-radius:var(--w2);box-shadow:5px 5px 0 var(--ink)}
-.sel-l li{padding:10px 14px;border-radius:14px;cursor:pointer}
-.sel-l li:hover,.sel-l li:focus{background:var(--c3);color:#3b2a22;outline:none}
-.sel-l li[aria-selected=true]::before{content:"✓ ";color:var(--c1);font-weight:700}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;margin:0}
-input[type=range]::-webkit-slider-runnable-track{height:14px;border:3px solid var(--ink);border-radius:20px;background:repeating-linear-gradient(45deg,var(--c2) 0 8px,var(--card) 8px 16px)}
-input[type=range]::-moz-range-track{height:10px;border:3px solid var(--ink);border-radius:20px;background:repeating-linear-gradient(45deg,var(--c2) 0 8px,var(--card) 8px 16px)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;margin-top:-11px;border:3px solid var(--ink);border-radius:50% 45% 55% 50%;background:var(--c1);box-shadow:2px 3px 0 var(--ink),inset -3px -3px 0 rgba(0,0,0,.18),inset 3px 3px 0 rgba(255,255,255,.35)}
-input[type=range]::-moz-range-thumb{width:24px;height:24px;border:3px solid var(--ink);border-radius:50%;background:var(--c1);box-shadow:2px 3px 0 var(--ink)}
-.go{min-height:58px;padding:10px 30px;background:var(--c1);color:#3b2a22;font:700 1.9rem Caveat,cursive}
-.go:hover{transform:translate(-2px,-3px) rotate(-1.2deg)}
-.go:active,.clay:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--ink)}
-.go:disabled{opacity:.55;cursor:wait}
-.say{margin:16px 0 4px;font:700 1.6rem/1.1 Caveat,cursive;color:var(--c1)}
-#zb{margin:18px 0 0}
-html::after{content:"";position:fixed;inset:0;z-index:40;pointer-events:none;mix-blend-mode:multiply;opacity:1;background:radial-gradient(ellipse at center,transparent 45%,rgba(110,70,30,.42)),linear-gradient(rgba(214,180,120,.16),rgba(214,180,120,.16)),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.012 .05' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 .55 0 0 0 0 .4 0 0 0 0 .25 0 0 0 1.4 -.2'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>"),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3 0 0 0 0 .22 0 0 0 0 .15 0 0 0 1.8 -.3'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"])::after{mix-blend-mode:soft-light;filter:invert(1)}}
-:root[data-theme="dark"]::after{mix-blend-mode:soft-light;filter:invert(1)}
-.sm{min-height:44px;padding:6px 18px;background:var(--c2);color:#3b2a22;font-size:1.1rem}
-.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
-.vbox{margin:18px 0 0;padding:12px;border:3px solid var(--ink);border-radius:var(--w1);background:var(--bg)}
-.vbox video{display:block;width:100%;max-height:340px;border-radius:12px;background:#000}
-.vbox .row{margin-top:8px;flex-wrap:nowrap}
-.vbox time{min-width:5.5em;text-align:right}
-.res{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;margin-top:26px}
-.card{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);border:3px solid var(--ink);border-radius:var(--w2);box-shadow:4px 4px 0 var(--ink);animation:pop .35s ease-out}
-@keyframes pop{from{transform:scale(.85) rotate(-3deg);opacity:0}}
-.th{display:grid;place-items:center;height:130px;border:2px solid var(--ink);border-radius:14px;overflow:hidden;background:conic-gradient(#0000000f 25%,transparent 0 50%,#0000000f 0 75%,transparent 0) 0 0/16px 16px}
-.th img{max-width:100%;max-height:100%;object-fit:contain}
-.th .big{display:grid;place-items:center;width:84px;height:84px;border:3px solid var(--ink);border-radius:50%;background:var(--c4);color:#3b2a22;font:700 1.8rem Caveat,cursive}
-.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sz{color:var(--mut);font-size:1rem}
-.shield{margin-top:36px;padding:clamp(16px,4vw,26px);background:var(--card);border:3px solid var(--ink);border-radius:var(--w1);box-shadow:6px 6px 0 var(--ink)}
-.shield h2{font-size:2.2rem;margin-bottom:8px}
-.shield ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 22px;margin:0;padding:0;list-style:none}
-.shield li::before{content:"✦ ";color:var(--c1)}
-.fine{margin:12px 0 0;color:var(--mut);font-size:1rem}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:30;max-width:90vw;padding:10px 22px;background:var(--c3);color:#3b2a22;border:3px solid var(--ink);border-radius:var(--w1);box-shadow:4px 4px 0 var(--ink);transform:translate(-50%,160%);transition:transform .3s}
-#toast.on{transform:translate(-50%,0)}
-@media (max-width:520px){.steps{flex-direction:column}.go{width:100%}.row .sm{flex:1}}
-html::after,:root:not([data-theme="light"])::after,:root[data-theme="dark"]::after{mix-blend-mode:overlay;opacity:.6;filter:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/>"),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.9 .9 .9 0 -.85 .9 .9 .9 0 -.85 .9 .9 .9 0 -.85 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-:root{--grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/><feColorMatrix values='0 0 0 0 .2 0 0 0 0 .13 0 0 0 0 .08 0 0 0 .6 -.3'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>")}
-.clay{position:relative;background-image:var(--grain);box-shadow:2px 3px 0 rgba(40,22,10,.35),5px 9px 14px rgba(60,35,15,.28)}
-.clay::before{content:"";position:absolute;inset:5px;border:2px dashed currentColor;border-radius:inherit;opacity:.38;pointer-events:none}
-.dz::before{display:none}
-.clay:active{box-shadow:1px 1px 3px rgba(40,22,10,.4)}
-.tab[aria-selected=true]{box-shadow:1px 2px 3px rgba(40,22,10,.4)}
-.tab{transform:rotate(var(--r,0deg))}.tab:nth-child(1){--r:-1.5deg}.tab:nth-child(2){--r:1deg}.tab:nth-child(3){--r:-.8deg}.tab:nth-child(4){--r:1.4deg}
-.go{transform:rotate(-1deg)}.sm{transform:rotate(.8deg)}
-.tab[aria-selected=true]::after{content:"";position:absolute;top:-10px;left:50%;width:18px;height:18px;margin-left:-9px;border-radius:50%;border:2px solid var(--ink);background:radial-gradient(circle at 35% 30%,#ffa58a,#c8442c 60%,#7a1f14);box-shadow:2px 4px 3px rgba(0,0,0,.3)}
-.panel,.shield,.card{position:relative}
-.panel::after,.shield::after,.card::after,.dz::after{content:"";position:absolute;top:-13px;left:50%;width:88px;height:26px;margin-left:-44px;transform:rotate(-3deg);background:repeating-linear-gradient(45deg,rgba(233,185,73,.82) 0 7px,rgba(255,244,214,.78) 7px 14px);box-shadow:0 1px 3px rgba(0,0,0,.25);clip-path:polygon(0 0,3% 20%,0 40%,3% 60%,0 80%,3% 100%,100% 100%,97% 80%,100% 60%,97% 40%,100% 20%,97% 0);pointer-events:none}
-.shield::after{background:repeating-linear-gradient(-45deg,rgba(143,174,139,.85) 0 7px,rgba(255,255,255,.55) 7px 14px);transform:rotate(2deg)}
-.card::after{width:56px;margin-left:-28px;top:-11px;height:20px;background:repeating-linear-gradient(45deg,rgba(122,166,194,.85) 0 6px,rgba(255,255,255,.55) 6px 12px)}
-.dz::after{left:0;top:-4px;margin-left:-14px;transform:rotate(-32deg);width:76px;background:repeating-linear-gradient(45deg,rgba(185,138,181,.85) 0 7px,rgba(255,255,255,.6) 7px 14px)}
-@keyframes rise{from{opacity:0;transform:translateY(18px) rotate(1deg)}}
-@keyframes drop{from{opacity:0;transform:translateY(-14px) scale(.9)}}
-@keyframes draw{from{stroke-dashoffset:300}}
-@keyframes bob{50%{translate:0 -5px}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes wig{25%{transform:rotate(-2deg) scale(1.03)}75%{transform:rotate(2deg) scale(1.03)}}
-h1{animation:rise .7s backwards}
-h1 em{display:inline-block;animation:wig 3.5s ease-in-out infinite}
-header{position:relative}
-header svg path{stroke-dasharray:300;animation:draw 1.1s .4s ease-out backwards}
-header::after{content:"✺";position:absolute;right:4%;top:0;font-size:3.2rem;color:var(--c3);animation:spin 18s linear infinite;pointer-events:none}
-header::before{content:"✿";position:absolute;right:17%;top:48px;font-size:2rem;color:var(--c5);animation:bob 4s ease-in-out infinite;pointer-events:none}
-.sub{animation:rise .7s .15s backwards}
-.steps li{animation:rise .6s backwards}.steps li:nth-child(2){animation-delay:.12s}.steps li:nth-child(3){animation-delay:.24s}
-.steps b{transition:transform .2s}.steps li:hover b{transform:rotate(20deg) scale(1.2)}
-.tab.intro{animation:drop .5s backwards}.tab:nth-child(2){animation-delay:.08s}.tab:nth-child(3){animation-delay:.16s}.tab:nth-child(4){animation-delay:.24s}
-.panel{animation:rise .6s .2s backwards}
-.panel>*{animation:none}.panel>:nth-child(n+2){animation-delay:.06s}.panel>:nth-child(n+4){animation-delay:.12s}.panel>:nth-child(n+6){animation-delay:.18s}.panel>:nth-child(n+8){animation-delay:.24s}
-.dz{animation:bob 5s 1s ease-in-out infinite}.dz:hover{animation-play-state:paused}
-.chip{animation:pop .3s}.chip button{transition:transform .2s}.chip button:hover{transform:rotate(90deg) scale(1.15)}
-.go:disabled{animation:wig .6s infinite}
-.sel-l{animation:drop .22s;transform-origin:top}.sel-l li{transition:padding .15s,background .15s}.sel-l li:hover{padding-left:22px}
-.vbox{animation:rise .5s}
-input[type=range]::-webkit-slider-thumb{transition:transform .15s}input[type=range]:hover::-webkit-slider-thumb{transform:rotate(25deg) scale(1.15)}
-.card{transition:transform .2s}.card:hover{transform:rotate(-1.2deg) translateY(-4px)}
-.th img{transition:transform .3s}.card:hover .th img{transform:scale(1.08) rotate(1deg)}
-.shield li{transition:transform .2s}.shield li:hover{transform:translateX(6px) rotate(-1deg)}
-header::before,header::after{content:none}
-:root{--c5:#6f9a96}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c5:#86b0ab}html::after,:root:not([data-theme="light"])::after{opacity:.3}}
-:root[data-theme="dark"]{--c5:#86b0ab}
-.dz::after{background:repeating-linear-gradient(45deg,rgba(111,154,150,.85) 0 7px,rgba(255,255,255,.55) 7px 14px)}
-::-webkit-scrollbar{width:20px;height:20px}
-::-webkit-scrollbar-track{background:var(--bg);border-left:3px dashed var(--mut)}
-::-webkit-scrollbar-thumb{background:var(--c1) var(--grain);border:3px solid var(--ink);border-radius:20px 14px 18px 12px/14px 18px 12px 20px;box-shadow:inset -3px -4px 0 rgba(0,0,0,.15),inset 3px 3px 0 rgba(255,255,255,.3)}
-::-webkit-scrollbar-thumb:hover{background:var(--c3) var(--grain)}
-::-webkit-scrollbar-corner{background:var(--bg)}
-.sel-l::-webkit-scrollbar{width:14px}.sel-l::-webkit-scrollbar-track{background:transparent;border-left:2px dashed var(--mut)}.sel-l::-webkit-scrollbar-thumb{background:var(--c4) var(--grain);border-width:2px}
-@supports not selector(::-webkit-scrollbar){html,.sel-l{scrollbar-color:var(--c1) var(--bg)}}
-.sel-l{background-image:var(--grain);padding:10px}
-.sel-l li{position:relative;margin:7px 2px;padding:10px 14px 10px 18px;border:2px solid var(--ink);border-radius:var(--w1);background:var(--card) var(--grain);box-shadow:2px 3px 0 rgba(40,22,10,.3);transition:transform .15s,box-shadow .15s,background-color .15s,padding .15s}
-.sel-l li:nth-child(odd){rotate:-.7deg}.sel-l li:nth-child(even){rotate:.7deg;border-radius:var(--w2)}
-.sel-l li::after{content:"";position:absolute;inset:3px;border:1.5px dashed currentColor;border-radius:inherit;opacity:.28;pointer-events:none}
-.sel-l li:hover,.sel-l li:focus{background:var(--c3) var(--grain);transform:translate(-1px,-2px) rotate(-1deg);box-shadow:3px 5px 0 rgba(40,22,10,.35)}
-.sel-l li:active{transform:translate(2px,2px);box-shadow:0 1px 0 rgba(40,22,10,.3)}
-.sel-l li[aria-selected=true]{background:var(--c2) var(--grain);color:#3b2a22}
-.sel-l li[aria-selected=true]::before{color:var(--ink)}
-.dz{rotate:calc(var(--a,0)*1deg);box-shadow:2px 3px 0 rgba(40,22,10,.35),calc(5px + var(--sx,0)*1px) calc(9px + var(--sy,0)*1px) 14px rgba(60,35,15,.28)}
-.dz>b{translate:0 calc(var(--ty,0)*.5px)}.dz>span{translate:0 calc(var(--ty,0)*.9px)}
-.shield{translate:calc(var(--tx,0)*1px) calc(var(--ty,0)*1px);rotate:calc(var(--a,0)*1deg);box-shadow:calc(6px + var(--sx,0)*1px) calc(6px + var(--sy,0)*1px) 0 var(--ink),calc(10px + var(--sx,0)*1.5px) calc(14px + var(--sy,0)*1px) 22px rgba(60,35,15,.16)}
-.dz{rotate:none;box-shadow:2px 3px 0 rgba(40,22,10,.35),5px 9px 14px rgba(60,35,15,.28)}.dz>b,.dz>span{translate:none}
-.panel,.shield{transform-origin:50% 0;rotate:calc(var(--a,0)*1deg);transform:perspective(1400px) rotateX(calc(var(--rx,0)*1deg))}
-.panel{box-shadow:calc(8px + var(--sx,0)*1px) calc(8px + var(--sy,0)*1px) 0 var(--ink),calc(14px + var(--sx,0)*1.5px) 20px 26px rgba(60,35,15,.14)}
-.shield{translate:none}
-.panel::after,.shield::after{rotate:calc(var(--a,0)*-1deg)}
-.panel,.shield{rotate:none;transform:perspective(1400px) rotateX(calc(var(--hx,0)*1deg)) rotateY(calc(var(--tw,0)*1deg))}
-.dz::before{display:block;inset:auto;right:-13px;top:50%;width:28px;height:90px;margin-top:-45px;border:0;opacity:1;border-radius:0;transform:rotate(5deg);z-index:2;background:repeating-linear-gradient(-45deg,rgba(233,185,73,.85) 0 7px,rgba(255,244,214,.8) 7px 14px);box-shadow:0 1px 3px rgba(0,0,0,.25);clip-path:polygon(0 0,20% 3%,40% 0,60% 3%,80% 0,100% 3%,100% 97%,80% 100%,60% 97%,40% 100%,20% 97%,0 100%)}
-.pvc{position:relative;display:flex;flex-direction:column;gap:3px;width:150px;padding:8px 8px 10px;background:var(--card) var(--grain);border:2px solid var(--ink);border-radius:var(--w2);box-shadow:2px 3px 0 rgba(40,22,10,.3);animation:pop .3s;rotate:-1deg;transition:transform .2s}
-.pvc:nth-child(even){rotate:1deg}.pvc:hover{transform:translateY(-3px)}
-.pvc.txt{width:min(100%,300px)}
-.pvt{display:grid;place-items:center;height:96px;border:2px solid var(--ink);border-radius:10px;overflow:hidden;background:conic-gradient(#0000000f 25%,transparent 0 50%,#0000000f 0 75%,transparent 0) 0 0/14px 14px;text-align:center;color:var(--mut)}
-.pvc.txt .pvt{height:110px}
-.pvt img{max-width:100%;max-height:100%;object-fit:contain}
-.pvc .nm{font-size:.95rem}.pvc .sz{font-size:.85rem}
-.pvc button{position:absolute;top:-10px;right:-10px;width:30px;height:30px;padding:0;border:2px solid var(--ink);border-radius:50%;background:var(--c1);color:#3b2a22;line-height:1;transition:transform .2s}
-.pvc button:hover{transform:rotate(90deg) scale(1.12)}
-.pvx{margin:0;padding:8px;width:100%;height:100%;overflow:hidden;text-align:left;white-space:pre;font:.78rem/1.25 ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
-.pvt:has(.pvx),.th:has(.pvx){place-items:start;background:var(--bg)}
-@media (max-width:520px){.pvc{width:calc(50% - 6px)}.pvc.txt{width:100%}}
-.panel{z-index:2}.shield{z-index:1;margin-top:68px}.sel.open{z-index:30}.sel-l{z-index:50}
-.sel-l{border-radius:22px;overflow-x:hidden;overflow-y:auto}
-.sel-l::-webkit-scrollbar{width:14px}
-.sel-l::-webkit-scrollbar-track{background:transparent;border:0}
-.sel-l::-webkit-scrollbar-thumb{background:var(--c4) var(--grain);border:2px solid var(--ink);border-radius:10px}
-html::after,:root:not([data-theme="light"])::after,:root[data-theme="dark"]::after{display:none}
-:root{--pg:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.45 .45 .45 0 -.175 .45 .45 .45 0 -.175 .45 .45 .45 0 -.175 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.25 .25 .25 0 .125 .25 .25 .25 0 .125 .25 .25 .25 0 .125 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}}
-:root[data-theme="dark"]{--pg:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.25 .25 .25 0 .125 .25 .25 .25 0 .125 .25 .25 .25 0 .125 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-body{background:radial-gradient(var(--dot) 1.4px,transparent 1.6px) 0 0/22px 22px,var(--pg) 0 0/128px 128px,var(--bg);background-blend-mode:normal,overlay,normal}
-.panel,.shield{background:var(--pg) 0 0/128px 128px,var(--card);background-blend-mode:overlay,normal}
-.card{background:var(--pg) 0 0/128px 128px,var(--bg);background-blend-mode:overlay,normal}
-html{-webkit-tap-highlight-color:transparent}
-:focus:not(:focus-visible){outline:none}
-:focus-visible{outline:3px dashed var(--ink);outline-offset:3px}
-::selection{background:var(--c3);color:#3b2a22}
-.tab,.clay,.go,.sel-b,.dz,.steps,.sub,h1,.sel-l li,.pvc button,.chip button,.fld>label,.say,header{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-.panel,.shield{transform:none;backface-visibility:hidden}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
-</head>
-<body>
-<div class="wrap">
-<header>
-<h1>Squish <em>&amp;</em> Shape</h1>
-<svg width="190" height="14" viewBox="0 0 190 14" aria-hidden="true" style="display:block;margin-top:-2px"><path d="M3 8 Q18 0 33 8 T63 8 T93 8 T123 8 T153 8 T187 6" fill="none" stroke="var(--c1)" stroke-width="4" stroke-linecap="round"/></svg>
-<p class="sub">Turn pictures, video frames and data files into other formats. Everything happens right here on your device.</p>
-<ol class="steps"><li><b>1</b>Drop a file</li><li><b>2</b>Pick a shape</li><li><b>3</b>Squish &amp; save</li></ol>
-</header>
-<nav class="tabs" id="tabs" role="tablist" aria-label="Converters"></nav>
-<section class="panel" id="panel" role="tabpanel"></section>
-<section class="shield" aria-labelledby="sh">
-<h2 id="sh">Your privacy shield</h2>
-<ul>
-<li>Files never upload. This page is blocked from talking to any server.</li>
-<li>No accounts, cookies or trackers.</li>
-<li>Photo location and camera details are dropped when pictures are re-drawn.</li>
-<li>Spreadsheet exports are neutralised against formula tricks.</li>
-<li>Nothing is rendered as raw HTML, so odd file names can’t run code.</li>
-<li>Oversized or unreadable files are politely refused.</li>
-</ul>
-<p class="fine">Honest note: no website can promise absolute security, but your files never leave this tab, which removes the biggest risks.</p>
-</section>
-</div>
-<div id="toast" role="status" aria-live="polite"></div>
-<noscript>This converter needs JavaScript to run on your device.</noscript>
-<script>
-(()=>{
-const $=s=>document.querySelector(s);
-const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
-const FM=[['png','PNG · crisp, keeps see-through'],['jpg','JPG · small photos'],['webp','WEBP · modern & light'],['gif','GIF · 256 colours'],['svg','SVG · picture inside a vector file']];
-const SZ=[['1','Original size'],['.75','Three-quarters'],['.5','Half size'],['.25','Quarter size']];
-const T={
-image:{n:'Pictures',col:'--c1',acc:'image/*',multi:1,f:FM,s:1,q:1,hint:'Drop PNG, JPG, WEBP, GIF, BMP, SVG or AVIF pictures. Pick as many as you like.',go:'Squish it!'},
-video:{n:'Video frame',col:'--c4',acc:'video/*',f:FM,s:1,q:1,v:1,hint:'Drop a WEBM, MP4 or MOV, slide to the moment you love, then snap it as a picture.',go:'Snap this frame!'},
-pdf:{n:'Pics to PDF',col:'--c2',acc:'image/*',multi:1,f:[['pdf','PDF · one page each']],s:1,q:1,hint:'Drop pictures and bind them into a single PDF, one picture per page.',go:'Bind my PDF!'},
-json:{n:'Data & text',col:'--c5',acc:'.json,.csv,.txt,.md,text/plain,text/csv,application/json',f:[['csv','JSON → CSV'],['json','CSV → JSON'],['pretty','JSON → neat JSON'],['b64','Text → Base64'],['txt','Base64 → Text']],hint:'Drop a .json, .csv or .txt file, then pick what it should become.',go:'Convert it!'}
-};
-let cur='image',files=[],urls=[],busy=false,opt={},done=[];
-let tT;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2600)};
-const kb=n=>n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
-const base=f=>(f.replace(/\.[^.]+$/,'').replace(/[^\w\- ]+/g,'_').slice(0,60)||'file');
-const url=b=>{const u=URL.createObjectURL(b);urls.push(u);return u};
-const wipe=()=>{urls.forEach(u=>URL.revokeObjectURL(u));urls=[]};
-document.addEventListener('click',e=>{document.querySelectorAll('.sel.open').forEach(s=>{if(!s.contains(e.target))s.classList.remove('open'),s.querySelector('ul').hidden=true})});
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src blob: data:; media-src blob:; connect-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>Squish &amp; Shape · private file converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Patrick+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4e8d3;
+        --dot: #e0cfb0;
+        --card: #fbf3e4;
+        --ink: #3b2a22;
+        --mut: #7a6455;
+        --c1: #d9774f;
+        --c2: #8fae8b;
+        --c3: #e9b949;
+        --c4: #7aa6c2;
+        --c5: #b98ab5;
+        --w1: 255px 18px 225px 18px/18px 225px 18px 255px;
+        --w2: 18px 255px 18px 225px/225px 18px 255px 18px;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #241c19;
+          --dot: #33292409;
+          --card: #352a25;
+          --ink: #f6ead6;
+          --mut: #c2ad98;
+          --c1: #e08a63;
+          --c2: #9dbb99;
+          --c3: #efc25a;
+          --c4: #8db5cf;
+          --c5: #c59cc1;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #241c19;
+        --dot: #33292409;
+        --card: #352a25;
+        --ink: #f6ead6;
+        --mut: #c2ad98;
+        --c1: #e08a63;
+        --c2: #9dbb99;
+        --c3: #efc25a;
+        --c4: #8db5cf;
+        --c5: #c59cc1;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg)
+          radial-gradient(var(--dot) 1.4px, transparent 1.6px) 0 0/22px 22px;
+        color: var(--ink);
+        font:
+          1.15rem/1.45 "Patrick Hand",
+          "Comic Sans MS",
+          cursive;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0 0 auto;
+        height: env(safe-area-inset-top, 0px);
+        background: var(--bg);
+        z-index: 10;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: clamp(14px, 4vw, 40px) clamp(12px, 4vw, 28px) 60px;
+      }
+      h1,
+      h2 {
+        font-family: Caveat, "Segoe Print", cursive;
+        margin: 0;
+        line-height: 1;
+      }
+      h1 {
+        font-size: clamp(2.8rem, 10vw, 5rem);
+        transform: rotate(-1.5deg);
+        display: inline-block;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--c1);
+      }
+      .sub {
+        max-width: 34ch;
+        margin: 0.4rem 0 1rem;
+        color: var(--mut);
+        font-size: 1.25rem;
+      }
+      .steps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 22px;
+        padding: 0;
+        list-style: none;
+      }
+      .steps li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .steps b {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+        background: var(--c3);
+        color: #3b2a22;
+        font-family: Caveat, cursive;
+        font-size: 1.4rem;
+      }
+      .clay {
+        border: 3px solid var(--ink);
+        border-radius: var(--w1);
+        box-shadow:
+          5px 5px 0 var(--ink),
+          inset -4px -6px 0 rgba(0, 0, 0, 0.13),
+          inset 4px 5px 0 rgba(255, 255, 255, 0.3);
+        transition:
+          transform 0.14s,
+          box-shadow 0.14s;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      :focus-visible {
+        outline: 3px dashed var(--c4);
+        outline-offset: 3px;
+      }
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+      .tab {
+        flex: 1 1 150px;
+        min-height: 52px;
+        padding: 8px 16px;
+        background: var(--tc);
+        color: #3b2a22;
+        font-size: 1.2rem;
+      }
+      .tab:nth-child(even) {
+        border-radius: var(--w2);
+      }
+      .tab:hover {
+        transform: translate(-1px, -3px) rotate(-1deg);
+      }
+      .tab[aria-selected="true"] {
+        transform: translate(4px, 4px);
+        box-shadow:
+          1px 1px 0 var(--ink),
+          inset -4px -6px 0 rgba(0, 0, 0, 0.18),
+          inset 4px 5px 0 rgba(255, 255, 255, 0.3);
+      }
+      .panel {
+        background: var(--card);
+        border: 3px solid var(--ink);
+        border-radius: var(--w2);
+        box-shadow: 8px 8px 0 var(--ink);
+        padding: clamp(16px, 4vw, 32px);
+      }
+      .hint {
+        margin: 0 0 14px;
+        color: var(--mut);
+      }
+      .dz {
+        display: grid;
+        place-items: center;
+        gap: 4px;
+        min-height: 150px;
+        padding: 20px;
+        text-align: center;
+        background: var(--tc);
+        color: #3b2a22;
+        cursor: pointer;
+        border-style: dashed;
+      }
+      .dz b {
+        font:
+          700 1.9rem Caveat,
+          cursive;
+      }
+      .dz:hover,
+      .dz.over {
+        transform: rotate(-0.8deg) scale(1.015);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0 0;
+      }
+      .chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+        padding: 4px 6px 4px 12px;
+        border: 2px solid var(--ink);
+        border-radius: 30px;
+        background: var(--bg);
+      }
+      .chip span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 200px;
+      }
+      .chip button {
+        width: 28px;
+        height: 28px;
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+        background: var(--c1);
+        color: #3b2a22;
+        line-height: 1;
+        padding: 0;
+      }
+      .ctl {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 18px;
+        margin: 22px 0;
+      }
+      .fld > label {
+        display: block;
+        font:
+          700 1.4rem Caveat,
+          cursive;
+        margin-bottom: 4px;
+      }
+      .sel {
+        position: relative;
+      }
+      .sel-b {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 50px;
+        padding: 8px 16px;
+        background: var(--card);
+        text-align: left;
+      }
+      .sel-b:hover {
+        transform: translate(-1px, -2px);
+      }
+      .car {
+        font-style: normal;
+        transition: transform 0.15s;
+      }
+      .sel.open .car {
+        transform: rotate(180deg);
+      }
+      .sel-l {
+        position: absolute;
+        z-index: 20;
+        left: 0;
+        right: 0;
+        top: calc(100% + 8px);
+        margin: 0;
+        padding: 6px;
+        list-style: none;
+        max-height: 260px;
+        overflow: auto;
+        background: var(--card);
+        border: 3px solid var(--ink);
+        border-radius: var(--w2);
+        box-shadow: 5px 5px 0 var(--ink);
+      }
+      .sel-l li {
+        padding: 10px 14px;
+        border-radius: 14px;
+        cursor: pointer;
+      }
+      .sel-l li:hover,
+      .sel-l li:focus {
+        background: var(--c3);
+        color: #3b2a22;
+        outline: none;
+      }
+      .sel-l li[aria-selected="true"]::before {
+        content: "✓ ";
+        color: var(--c1);
+        font-weight: 700;
+      }
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 34px;
+        background: transparent;
+        margin: 0;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 14px;
+        border: 3px solid var(--ink);
+        border-radius: 20px;
+        background: repeating-linear-gradient(
+          45deg,
+          var(--c2) 0 8px,
+          var(--card) 8px 16px
+        );
+      }
+      input[type="range"]::-moz-range-track {
+        height: 10px;
+        border: 3px solid var(--ink);
+        border-radius: 20px;
+        background: repeating-linear-gradient(
+          45deg,
+          var(--c2) 0 8px,
+          var(--card) 8px 16px
+        );
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 30px;
+        height: 30px;
+        margin-top: -11px;
+        border: 3px solid var(--ink);
+        border-radius: 50% 45% 55% 50%;
+        background: var(--c1);
+        box-shadow:
+          2px 3px 0 var(--ink),
+          inset -3px -3px 0 rgba(0, 0, 0, 0.18),
+          inset 3px 3px 0 rgba(255, 255, 255, 0.35);
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+        background: var(--c1);
+        box-shadow: 2px 3px 0 var(--ink);
+      }
+      .go {
+        min-height: 58px;
+        padding: 10px 30px;
+        background: var(--c1);
+        color: #3b2a22;
+        font:
+          700 1.9rem Caveat,
+          cursive;
+      }
+      .go:hover {
+        transform: translate(-2px, -3px) rotate(-1.2deg);
+      }
+      .go:active,
+      .clay:active {
+        transform: translate(4px, 4px);
+        box-shadow: 1px 1px 0 var(--ink);
+      }
+      .go:disabled {
+        opacity: 0.55;
+        cursor: wait;
+      }
+      .say {
+        margin: 16px 0 4px;
+        font:
+          700 1.6rem/1.1 Caveat,
+          cursive;
+        color: var(--c1);
+      }
+      #zb {
+        margin: 18px 0 0;
+      }
+      html::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        pointer-events: none;
+        mix-blend-mode: multiply;
+        opacity: 1;
+        background:
+          radial-gradient(
+            ellipse at center,
+            transparent 45%,
+            rgba(110, 70, 30, 0.42)
+          ),
+          linear-gradient(rgba(214, 180, 120, 0.16), rgba(214, 180, 120, 0.16)),
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.012 .05' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 .55 0 0 0 0 .4 0 0 0 0 .25 0 0 0 1.4 -.2'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>"),
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3 0 0 0 0 .22 0 0 0 0 .15 0 0 0 1.8 -.3'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"])::after {
+          mix-blend-mode: soft-light;
+          filter: invert(1);
+        }
+      }
+      :root[data-theme="dark"]::after {
+        mix-blend-mode: soft-light;
+        filter: invert(1);
+      }
+      .sm {
+        min-height: 44px;
+        padding: 6px 18px;
+        background: var(--c2);
+        color: #3b2a22;
+        font-size: 1.1rem;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+      }
+      .vbox {
+        margin: 18px 0 0;
+        padding: 12px;
+        border: 3px solid var(--ink);
+        border-radius: var(--w1);
+        background: var(--bg);
+      }
+      .vbox video {
+        display: block;
+        width: 100%;
+        max-height: 340px;
+        border-radius: 12px;
+        background: #000;
+      }
+      .vbox .row {
+        margin-top: 8px;
+        flex-wrap: nowrap;
+      }
+      .vbox time {
+        min-width: 5.5em;
+        text-align: right;
+      }
+      .res {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 18px;
+        margin-top: 26px;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        background: var(--bg);
+        border: 3px solid var(--ink);
+        border-radius: var(--w2);
+        box-shadow: 4px 4px 0 var(--ink);
+        animation: pop 0.35s ease-out;
+      }
+      @keyframes pop {
+        from {
+          transform: scale(0.85) rotate(-3deg);
+          opacity: 0;
+        }
+      }
+      .th {
+        display: grid;
+        place-items: center;
+        height: 130px;
+        border: 2px solid var(--ink);
+        border-radius: 14px;
+        overflow: hidden;
+        background: conic-gradient(
+            #0000000f 25%,
+            transparent 0 50%,
+            #0000000f 0 75%,
+            transparent 0
+          )
+          0 0/16px 16px;
+      }
+      .th img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .th .big {
+        display: grid;
+        place-items: center;
+        width: 84px;
+        height: 84px;
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+        background: var(--c4);
+        color: #3b2a22;
+        font:
+          700 1.8rem Caveat,
+          cursive;
+      }
+      .nm {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sz {
+        color: var(--mut);
+        font-size: 1rem;
+      }
+      .shield {
+        margin-top: 36px;
+        padding: clamp(16px, 4vw, 26px);
+        background: var(--card);
+        border: 3px solid var(--ink);
+        border-radius: var(--w1);
+        box-shadow: 6px 6px 0 var(--ink);
+      }
+      .shield h2 {
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+      }
+      .shield ul {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 10px 22px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .shield li::before {
+        content: "✦ ";
+        color: var(--c1);
+      }
+      .fine {
+        margin: 12px 0 0;
+        color: var(--mut);
+        font-size: 1rem;
+      }
+      #toast {
+        position: fixed;
+        left: 50%;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        z-index: 30;
+        max-width: 90vw;
+        padding: 10px 22px;
+        background: var(--c3);
+        color: #3b2a22;
+        border: 3px solid var(--ink);
+        border-radius: var(--w1);
+        box-shadow: 4px 4px 0 var(--ink);
+        transform: translate(-50%, 160%);
+        transition: transform 0.3s;
+      }
+      #toast.on {
+        transform: translate(-50%, 0);
+      }
+      @media (max-width: 520px) {
+        .steps {
+          flex-direction: column;
+        }
+        .go {
+          width: 100%;
+        }
+        .row .sm {
+          flex: 1;
+        }
+      }
+      html::after,
+      :root:not([data-theme="light"])::after,
+      :root[data-theme="dark"]::after {
+        mix-blend-mode: overlay;
+        opacity: 0.6;
+        filter: none;
+        background:
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/>"),
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.9 .9 .9 0 -.85 .9 .9 .9 0 -.85 .9 .9 .9 0 -.85 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      }
+      :root {
+        --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/><feColorMatrix values='0 0 0 0 .2 0 0 0 0 .13 0 0 0 0 .08 0 0 0 .6 -.3'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+      }
+      .clay {
+        position: relative;
+        background-image: var(--grain);
+        box-shadow:
+          2px 3px 0 rgba(40, 22, 10, 0.35),
+          5px 9px 14px rgba(60, 35, 15, 0.28);
+      }
+      .clay::before {
+        content: "";
+        position: absolute;
+        inset: 5px;
+        border: 2px dashed currentColor;
+        border-radius: inherit;
+        opacity: 0.38;
+        pointer-events: none;
+      }
+      .dz::before {
+        display: none;
+      }
+      .clay:active {
+        box-shadow: 1px 1px 3px rgba(40, 22, 10, 0.4);
+      }
+      .tab[aria-selected="true"] {
+        box-shadow: 1px 2px 3px rgba(40, 22, 10, 0.4);
+      }
+      .tab {
+        transform: rotate(var(--r, 0deg));
+      }
+      .tab:nth-child(1) {
+        --r: -1.5deg;
+      }
+      .tab:nth-child(2) {
+        --r: 1deg;
+      }
+      .tab:nth-child(3) {
+        --r: -0.8deg;
+      }
+      .tab:nth-child(4) {
+        --r: 1.4deg;
+      }
+      .go {
+        transform: rotate(-1deg);
+      }
+      .sm {
+        transform: rotate(0.8deg);
+      }
+      .tab[aria-selected="true"]::after {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        width: 18px;
+        height: 18px;
+        margin-left: -9px;
+        border-radius: 50%;
+        border: 2px solid var(--ink);
+        background: radial-gradient(
+          circle at 35% 30%,
+          #ffa58a,
+          #c8442c 60%,
+          #7a1f14
+        );
+        box-shadow: 2px 4px 3px rgba(0, 0, 0, 0.3);
+      }
+      .panel,
+      .shield,
+      .card {
+        position: relative;
+      }
+      .panel::after,
+      .shield::after,
+      .card::after,
+      .dz::after {
+        content: "";
+        position: absolute;
+        top: -13px;
+        left: 50%;
+        width: 88px;
+        height: 26px;
+        margin-left: -44px;
+        transform: rotate(-3deg);
+        background: repeating-linear-gradient(
+          45deg,
+          rgba(233, 185, 73, 0.82) 0 7px,
+          rgba(255, 244, 214, 0.78) 7px 14px
+        );
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        clip-path: polygon(
+          0 0,
+          3% 20%,
+          0 40%,
+          3% 60%,
+          0 80%,
+          3% 100%,
+          100% 100%,
+          97% 80%,
+          100% 60%,
+          97% 40%,
+          100% 20%,
+          97% 0
+        );
+        pointer-events: none;
+      }
+      .shield::after {
+        background: repeating-linear-gradient(
+          -45deg,
+          rgba(143, 174, 139, 0.85) 0 7px,
+          rgba(255, 255, 255, 0.55) 7px 14px
+        );
+        transform: rotate(2deg);
+      }
+      .card::after {
+        width: 56px;
+        margin-left: -28px;
+        top: -11px;
+        height: 20px;
+        background: repeating-linear-gradient(
+          45deg,
+          rgba(122, 166, 194, 0.85) 0 6px,
+          rgba(255, 255, 255, 0.55) 6px 12px
+        );
+      }
+      .dz::after {
+        left: 0;
+        top: -4px;
+        margin-left: -14px;
+        transform: rotate(-32deg);
+        width: 76px;
+        background: repeating-linear-gradient(
+          45deg,
+          rgba(185, 138, 181, 0.85) 0 7px,
+          rgba(255, 255, 255, 0.6) 7px 14px
+        );
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(18px) rotate(1deg);
+        }
+      }
+      @keyframes drop {
+        from {
+          opacity: 0;
+          transform: translateY(-14px) scale(0.9);
+        }
+      }
+      @keyframes draw {
+        from {
+          stroke-dashoffset: 300;
+        }
+      }
+      @keyframes bob {
+        50% {
+          translate: 0 -5px;
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes wig {
+        25% {
+          transform: rotate(-2deg) scale(1.03);
+        }
+        75% {
+          transform: rotate(2deg) scale(1.03);
+        }
+      }
+      h1 {
+        animation: rise 0.7s backwards;
+      }
+      h1 em {
+        display: inline-block;
+        animation: wig 3.5s ease-in-out infinite;
+      }
+      header {
+        position: relative;
+      }
+      header svg path {
+        stroke-dasharray: 300;
+        animation: draw 1.1s 0.4s ease-out backwards;
+      }
+      header::after {
+        content: "✺";
+        position: absolute;
+        right: 4%;
+        top: 0;
+        font-size: 3.2rem;
+        color: var(--c3);
+        animation: spin 18s linear infinite;
+        pointer-events: none;
+      }
+      header::before {
+        content: "✿";
+        position: absolute;
+        right: 17%;
+        top: 48px;
+        font-size: 2rem;
+        color: var(--c5);
+        animation: bob 4s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .sub {
+        animation: rise 0.7s 0.15s backwards;
+      }
+      .steps li {
+        animation: rise 0.6s backwards;
+      }
+      .steps li:nth-child(2) {
+        animation-delay: 0.12s;
+      }
+      .steps li:nth-child(3) {
+        animation-delay: 0.24s;
+      }
+      .steps b {
+        transition: transform 0.2s;
+      }
+      .steps li:hover b {
+        transform: rotate(20deg) scale(1.2);
+      }
+      .tab.intro {
+        animation: drop 0.5s backwards;
+      }
+      .tab:nth-child(2) {
+        animation-delay: 0.08s;
+      }
+      .tab:nth-child(3) {
+        animation-delay: 0.16s;
+      }
+      .tab:nth-child(4) {
+        animation-delay: 0.24s;
+      }
+      .panel {
+        animation: rise 0.6s 0.2s backwards;
+      }
+      .panel > * {
+        animation: none;
+      }
+      .panel > :nth-child(n + 2) {
+        animation-delay: 0.06s;
+      }
+      .panel > :nth-child(n + 4) {
+        animation-delay: 0.12s;
+      }
+      .panel > :nth-child(n + 6) {
+        animation-delay: 0.18s;
+      }
+      .panel > :nth-child(n + 8) {
+        animation-delay: 0.24s;
+      }
+      .dz {
+        animation: bob 5s 1s ease-in-out infinite;
+      }
+      .dz:hover {
+        animation-play-state: paused;
+      }
+      .chip {
+        animation: pop 0.3s;
+      }
+      .chip button {
+        transition: transform 0.2s;
+      }
+      .chip button:hover {
+        transform: rotate(90deg) scale(1.15);
+      }
+      .go:disabled {
+        animation: wig 0.6s infinite;
+      }
+      .sel-l {
+        animation: drop 0.22s;
+        transform-origin: top;
+      }
+      .sel-l li {
+        transition:
+          padding 0.15s,
+          background 0.15s;
+      }
+      .sel-l li:hover {
+        padding-left: 22px;
+      }
+      .vbox {
+        animation: rise 0.5s;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        transition: transform 0.15s;
+      }
+      input[type="range"]:hover::-webkit-slider-thumb {
+        transform: rotate(25deg) scale(1.15);
+      }
+      .card {
+        transition: transform 0.2s;
+      }
+      .card:hover {
+        transform: rotate(-1.2deg) translateY(-4px);
+      }
+      .th img {
+        transition: transform 0.3s;
+      }
+      .card:hover .th img {
+        transform: scale(1.08) rotate(1deg);
+      }
+      .shield li {
+        transition: transform 0.2s;
+      }
+      .shield li:hover {
+        transform: translateX(6px) rotate(-1deg);
+      }
+      header::before,
+      header::after {
+        content: none;
+      }
+      :root {
+        --c5: #6f9a96;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --c5: #86b0ab;
+        }
+        html::after,
+        :root:not([data-theme="light"])::after {
+          opacity: 0.3;
+        }
+      }
+      :root[data-theme="dark"] {
+        --c5: #86b0ab;
+      }
+      .dz::after {
+        background: repeating-linear-gradient(
+          45deg,
+          rgba(111, 154, 150, 0.85) 0 7px,
+          rgba(255, 255, 255, 0.55) 7px 14px
+        );
+      }
+      ::-webkit-scrollbar {
+        width: 20px;
+        height: 20px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border-left: 3px dashed var(--mut);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--c1) var(--grain);
+        border: 3px solid var(--ink);
+        border-radius: 20px 14px 18px 12px/14px 18px 12px 20px;
+        box-shadow:
+          inset -3px -4px 0 rgba(0, 0, 0, 0.15),
+          inset 3px 3px 0 rgba(255, 255, 255, 0.3);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--c3) var(--grain);
+      }
+      ::-webkit-scrollbar-corner {
+        background: var(--bg);
+      }
+      .sel-l::-webkit-scrollbar {
+        width: 14px;
+      }
+      .sel-l::-webkit-scrollbar-track {
+        background: transparent;
+        border-left: 2px dashed var(--mut);
+      }
+      .sel-l::-webkit-scrollbar-thumb {
+        background: var(--c4) var(--grain);
+        border-width: 2px;
+      }
+      @supports not selector(::-webkit-scrollbar) {
+        html,
+        .sel-l {
+          scrollbar-color: var(--c1) var(--bg);
+        }
+      }
+      .sel-l {
+        background-image: var(--grain);
+        padding: 10px;
+      }
+      .sel-l li {
+        position: relative;
+        margin: 7px 2px;
+        padding: 10px 14px 10px 18px;
+        border: 2px solid var(--ink);
+        border-radius: var(--w1);
+        background: var(--card) var(--grain);
+        box-shadow: 2px 3px 0 rgba(40, 22, 10, 0.3);
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s,
+          background-color 0.15s,
+          padding 0.15s;
+      }
+      .sel-l li:nth-child(odd) {
+        rotate: -0.7deg;
+      }
+      .sel-l li:nth-child(even) {
+        rotate: 0.7deg;
+        border-radius: var(--w2);
+      }
+      .sel-l li::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border: 1.5px dashed currentColor;
+        border-radius: inherit;
+        opacity: 0.28;
+        pointer-events: none;
+      }
+      .sel-l li:hover,
+      .sel-l li:focus {
+        background: var(--c3) var(--grain);
+        transform: translate(-1px, -2px) rotate(-1deg);
+        box-shadow: 3px 5px 0 rgba(40, 22, 10, 0.35);
+      }
+      .sel-l li:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0 1px 0 rgba(40, 22, 10, 0.3);
+      }
+      .sel-l li[aria-selected="true"] {
+        background: var(--c2) var(--grain);
+        color: #3b2a22;
+      }
+      .sel-l li[aria-selected="true"]::before {
+        color: var(--ink);
+      }
+      .dz {
+        rotate: calc(var(--a, 0) * 1deg);
+        box-shadow:
+          2px 3px 0 rgba(40, 22, 10, 0.35),
+          calc(5px + var(--sx, 0) * 1px) calc(9px + var(--sy, 0) * 1px) 14px
+            rgba(60, 35, 15, 0.28);
+      }
+      .dz > b {
+        translate: 0 calc(var(--ty, 0) * 0.5px);
+      }
+      .dz > span {
+        translate: 0 calc(var(--ty, 0) * 0.9px);
+      }
+      .shield {
+        translate: calc(var(--tx, 0) * 1px) calc(var(--ty, 0) * 1px);
+        rotate: calc(var(--a, 0) * 1deg);
+        box-shadow:
+          calc(6px + var(--sx, 0) * 1px) calc(6px + var(--sy, 0) * 1px) 0
+            var(--ink),
+          calc(10px + var(--sx, 0) * 1.5px) calc(14px + var(--sy, 0) * 1px) 22px
+            rgba(60, 35, 15, 0.16);
+      }
+      .dz {
+        rotate: none;
+        box-shadow:
+          2px 3px 0 rgba(40, 22, 10, 0.35),
+          5px 9px 14px rgba(60, 35, 15, 0.28);
+      }
+      .dz > b,
+      .dz > span {
+        translate: none;
+      }
+      .panel,
+      .shield {
+        transform-origin: 50% 0;
+        rotate: calc(var(--a, 0) * 1deg);
+        transform: perspective(1400px) rotateX(calc(var(--rx, 0) * 1deg));
+      }
+      .panel {
+        box-shadow:
+          calc(8px + var(--sx, 0) * 1px) calc(8px + var(--sy, 0) * 1px) 0
+            var(--ink),
+          calc(14px + var(--sx, 0) * 1.5px) 20px 26px rgba(60, 35, 15, 0.14);
+      }
+      .shield {
+        translate: none;
+      }
+      .panel::after,
+      .shield::after {
+        rotate: calc(var(--a, 0) * -1deg);
+      }
+      .panel,
+      .shield {
+        rotate: none;
+        transform: perspective(1400px) rotateX(calc(var(--hx, 0) * 1deg))
+          rotateY(calc(var(--tw, 0) * 1deg));
+      }
+      .dz::before {
+        display: block;
+        inset: auto;
+        right: -13px;
+        top: 50%;
+        width: 28px;
+        height: 90px;
+        margin-top: -45px;
+        border: 0;
+        opacity: 1;
+        border-radius: 0;
+        transform: rotate(5deg);
+        z-index: 2;
+        background: repeating-linear-gradient(
+          -45deg,
+          rgba(233, 185, 73, 0.85) 0 7px,
+          rgba(255, 244, 214, 0.8) 7px 14px
+        );
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        clip-path: polygon(
+          0 0,
+          20% 3%,
+          40% 0,
+          60% 3%,
+          80% 0,
+          100% 3%,
+          100% 97%,
+          80% 100%,
+          60% 97%,
+          40% 100%,
+          20% 97%,
+          0 100%
+        );
+      }
+      .pvc {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        width: 150px;
+        padding: 8px 8px 10px;
+        background: var(--card) var(--grain);
+        border: 2px solid var(--ink);
+        border-radius: var(--w2);
+        box-shadow: 2px 3px 0 rgba(40, 22, 10, 0.3);
+        animation: pop 0.3s;
+        rotate: -1deg;
+        transition: transform 0.2s;
+      }
+      .pvc:nth-child(even) {
+        rotate: 1deg;
+      }
+      .pvc:hover {
+        transform: translateY(-3px);
+      }
+      .pvc.txt {
+        width: min(100%, 300px);
+      }
+      .pvt {
+        display: grid;
+        place-items: center;
+        height: 96px;
+        border: 2px solid var(--ink);
+        border-radius: 10px;
+        overflow: hidden;
+        background: conic-gradient(
+            #0000000f 25%,
+            transparent 0 50%,
+            #0000000f 0 75%,
+            transparent 0
+          )
+          0 0/14px 14px;
+        text-align: center;
+        color: var(--mut);
+      }
+      .pvc.txt .pvt {
+        height: 110px;
+      }
+      .pvt img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .pvc .nm {
+        font-size: 0.95rem;
+      }
+      .pvc .sz {
+        font-size: 0.85rem;
+      }
+      .pvc button {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+        background: var(--c1);
+        color: #3b2a22;
+        line-height: 1;
+        transition: transform 0.2s;
+      }
+      .pvc button:hover {
+        transform: rotate(90deg) scale(1.12);
+      }
+      .pvx {
+        margin: 0;
+        padding: 8px;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        text-align: left;
+        white-space: pre;
+        font:
+          0.78rem/1.25 ui-monospace,
+          Menlo,
+          Consolas,
+          monospace;
+        color: var(--ink);
+      }
+      .pvt:has(.pvx),
+      .th:has(.pvx) {
+        place-items: start;
+        background: var(--bg);
+      }
+      @media (max-width: 520px) {
+        .pvc {
+          width: calc(50% - 6px);
+        }
+        .pvc.txt {
+          width: 100%;
+        }
+      }
+      .panel {
+        z-index: 2;
+      }
+      .shield {
+        z-index: 1;
+        margin-top: 68px;
+      }
+      .sel.open {
+        z-index: 30;
+      }
+      .sel-l {
+        z-index: 50;
+      }
+      .sel-l {
+        border-radius: 22px;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .sel-l::-webkit-scrollbar {
+        width: 14px;
+      }
+      .sel-l::-webkit-scrollbar-track {
+        background: transparent;
+        border: 0;
+      }
+      .sel-l::-webkit-scrollbar-thumb {
+        background: var(--c4) var(--grain);
+        border: 2px solid var(--ink);
+        border-radius: 10px;
+      }
+      html::after,
+      :root:not([data-theme="light"])::after,
+      :root[data-theme="dark"]::after {
+        display: none;
+      }
+      :root {
+        --pg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.45 .45 .45 0 -.175 .45 .45 .45 0 -.175 .45 .45 .45 0 -.175 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --pg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.25 .25 .25 0 .125 .25 .25 .25 0 .125 .25 .25 .25 0 .125 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+        }
+      }
+      :root[data-theme="dark"] {
+        --pg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='.25 .25 .25 0 .125 .25 .25 .25 0 .125 .25 .25 .25 0 .125 0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      }
+      body {
+        background:
+          radial-gradient(var(--dot) 1.4px, transparent 1.6px) 0 0/22px 22px,
+          var(--pg) 0 0/128px 128px,
+          var(--bg);
+        background-blend-mode: normal, overlay, normal;
+      }
+      .panel,
+      .shield {
+        background:
+          var(--pg) 0 0/128px 128px,
+          var(--card);
+        background-blend-mode: overlay, normal;
+      }
+      .card {
+        background:
+          var(--pg) 0 0/128px 128px,
+          var(--bg);
+        background-blend-mode: overlay, normal;
+      }
+      html {
+        -webkit-tap-highlight-color: transparent;
+      }
+      :focus:not(:focus-visible) {
+        outline: none;
+      }
+      :focus-visible {
+        outline: 3px dashed var(--ink);
+        outline-offset: 3px;
+      }
+      ::selection {
+        background: var(--c3);
+        color: #3b2a22;
+      }
+      .tab,
+      .clay,
+      .go,
+      .sel-b,
+      .dz,
+      .steps,
+      .sub,
+      h1,
+      .sel-l li,
+      .pvc button,
+      .chip button,
+      .fld > label,
+      .say,
+      header {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+      }
+      .panel,
+      .shield {
+        transform: none;
+        backface-visibility: hidden;
+      }
+      .chips {
+        max-height: min(46vh, 340px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 14px 12px 8px;
+      }
+      .chips:not(:empty) {
+        border: 2px dashed var(--mut);
+        border-radius: 18px;
+      }
+      .pvc .mv {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 4px;
+      }
+      .pvc .mv button {
+        position: static;
+        width: 34px;
+        height: 30px;
+        border-radius: 10px;
+        background: var(--c2);
+        font-size: 0.85rem;
+      }
+      .pvc .mv button:hover {
+        transform: scale(1.1);
+      }
+      .tab:nth-child(5) {
+        --r: -1deg;
+      }
+      #cb {
+        margin-left: 12px;
+      }
+      @media (max-width: 520px) {
+        #cb {
+          margin: 12px 0 0;
+          width: 100%;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Squish <em>&amp;</em> Shape</h1>
+        <svg
+          width="190"
+          height="14"
+          viewBox="0 0 190 14"
+          aria-hidden="true"
+          style="display: block; margin-top: -2px"
+        >
+          <path
+            d="M3 8 Q18 0 33 8 T63 8 T93 8 T123 8 T153 8 T187 6"
+            fill="none"
+            stroke="var(--c1)"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+        </svg>
+        <p class="sub">
+          Turn pictures, video frames and data files into other formats.
+          Everything happens right here on your device.
+        </p>
+        <ol class="steps">
+          <li><b>1</b>Drop a file</li>
+          <li><b>2</b>Pick a shape</li>
+          <li><b>3</b>Squish &amp; save</li>
+        </ol>
+      </header>
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Converters"></nav>
+      <section class="panel" id="panel" role="tabpanel"></section>
+      <section class="shield" aria-labelledby="sh">
+        <h2 id="sh">Your privacy shield</h2>
+        <ul>
+          <li>
+            Files never upload. This page is blocked from talking to any server.
+          </li>
+          <li>No accounts, cookies or trackers.</li>
+          <li>
+            Photo location and camera details are dropped when pictures are
+            re-drawn.
+          </li>
+          <li>Spreadsheet exports are neutralised against formula tricks.</li>
+          <li>
+            Nothing is rendered as raw HTML, so odd file names can’t run code.
+          </li>
+          <li>Oversized or unreadable files are politely refused.</li>
+        </ul>
+        <p class="fine">
+          Honest note: no website can promise absolute security, but your files
+          never leave this tab, which removes the biggest risks.
+        </p>
+      </section>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <noscript>This converter needs JavaScript to run on your device.</noscript>
+    <script>
+      (() => {
+        const $ = (s) => document.querySelector(s);
+        const mk = (t, c, x) => {
+          const e = document.createElement(t);
+          if (c) e.className = c;
+          if (x != null) e.textContent = x;
+          return e;
+        };
+        const FM = [
+          ["png", "PNG · crisp, keeps see-through"],
+          ["jpg", "JPG · small photos"],
+          ["webp", "WEBP · modern & light"],
+          ["gif", "GIF · 256 colours"],
+          ["svg", "SVG · picture inside a vector file"],
+        ];
+        const SZ = [
+          ["1", "Original size"],
+          ["2", "Double size"],
+          [".75", "Three-quarters"],
+          [".5", "Half size"],
+          [".25", "Quarter size"],
+          [".1", "Tiny · 10%"],
+        ];
+        const T = {
+          image: {
+            n: "Pictures",
+            col: "--c1",
+            acc: "image/*",
+            multi: 1,
+            f: FM,
+            s: 1,
+            q: 1,
+            hint: "Drop PNG, JPG, WEBP, GIF, BMP, SVG or AVIF pictures. Pick as many as you like.",
+            go: "Squish it!",
+          },
+          video: {
+            n: "Video frame",
+            col: "--c4",
+            acc: "video/*",
+            f: FM,
+            s: 1,
+            q: 1,
+            v: 1,
+            hint: "Drop a WEBM, MP4 or MOV, slide to the moment you love, then snap it as a picture.",
+            go: "Snap this frame!",
+          },
+          pdf: {
+            n: "Pics to PDF",
+            col: "--c2",
+            acc: "image/*",
+            multi: 1,
+            f: [["pdf", "PDF · one page each"]],
+            s: 1,
+            q: 1,
+            hint: "Drop pictures and bind them into one PDF. Reorder pages with ◀ ▶, then pick a Look for a cleaner document.",
+            go: "Bind my PDF!",
+          },
+          shrink: {
+            n: "Compress",
+            col: "--c3",
+            acc: "image/*",
+            multi: 1,
+            f: [
+              ["smart", "Smart · smallest, looks identical"],
+              ["png", "Lossless · PNG, pixel-perfect"],
+              ["webp", "Near-lossless · WEBP"],
+              ["jpg", "High quality · JPG"],
+            ],
+            s: 1,
+            q: 1,
+            hint: "Make pictures lighter with no visible change. Smart tries each format and keeps the smallest.",
+            go: "Shrink it!",
+          },
+          json: {
+            n: "Data & text",
+            col: "--c5",
+            acc: ".json,.csv,.txt,.md,text/plain,text/csv,application/json",
+            f: [
+              ["csv", "JSON → CSV"],
+              ["json", "CSV → JSON"],
+              ["pretty", "JSON → neat JSON"],
+              ["b64", "Text → Base64"],
+              ["txt", "Base64 → Text"],
+            ],
+            hint: "Drop a .json, .csv or .txt file, then pick what it should become.",
+            go: "Convert it!",
+          },
+        };
+        let cur = "image",
+          files = [],
+          urls = [],
+          busy = false,
+          opt = {},
+          done = [];
+        let tT;
+        const toast = (m) => {
+          const t = $("#toast");
+          t.textContent = m;
+          t.classList.add("on");
+          clearTimeout(tT);
+          tT = setTimeout(() => t.classList.remove("on"), 2600);
+        };
+        const kb = (n) =>
+          n > 1048576
+            ? (n / 1048576).toFixed(1) + " MB"
+            : Math.max(1, Math.round(n / 1024)) + " KB";
+        const base = (f) =>
+          f
+            .replace(/\.[^.]+$/, "")
+            .replace(/[^\w\- ]+/g, "_")
+            .slice(0, 60) || "file";
+        const url = (b) => {
+          const u = URL.createObjectURL(b);
+          urls.push(u);
+          return u;
+        };
+        const wipe = () => {
+          urls.forEach((u) => URL.revokeObjectURL(u));
+          urls = [];
+        };
+        document.addEventListener("click", (e) => {
+          document.querySelectorAll(".sel.open").forEach((s) => {
+            if (!s.contains(e.target))
+              (s.classList.remove("open"),
+                (s.querySelector("ul").hidden = true));
+          });
+        });
 
-function Select(label,opts,val,on){
- const f=mk('div','fld'),w=mk('div','sel'),id='s'+Math.random().toString(36).slice(2,7);
- const lb=mk('label','',label);lb.id=id;
- const b=mk('button','sel-b clay');b.type='button';b.setAttribute('aria-haspopup','listbox');b.setAttribute('aria-labelledby',id);
- const l=mk('ul');l.className='sel-l';l.setAttribute('role','listbox');l.hidden=true;
- const set=v=>{b.textContent='';b.append(mk('span','',opts.find(o=>o[0]===v)[1]),mk('i','car','▾'));[...l.children].forEach(li=>li.setAttribute('aria-selected',String(li.dataset.v===v)))};
- const close=()=>{w.classList.remove('open');l.hidden=true};
- const open=()=>{w.classList.add('open');l.hidden=false;(l.querySelector('[aria-selected=true]')||l.firstChild).focus()};
- opts.forEach(o=>{const li=mk('li','',o[1]);li.dataset.v=o[0];li.tabIndex=-1;li.setAttribute('role','option');
-  li.onclick=()=>{set(o[0]);close();b.focus();on(o[0])};
-  li.onkeydown=e=>{const k=e.key;if(k==='ArrowDown'){e.preventDefault();(li.nextSibling||li).focus()}else if(k==='ArrowUp'){e.preventDefault();(li.previousSibling||li).focus()}else if(k==='Enter'||k===' '){e.preventDefault();li.click()}else if(k==='Escape'||k==='Tab'){close();b.focus()}};
-  l.append(li)});
- b.onclick=()=>l.hidden?open():close();
- b.onkeydown=e=>{if(e.key==='ArrowDown'){e.preventDefault();open()}};
- set(val);w.append(b,l);f.append(lb,w);return f;
-}
+        function Select(label, opts, val, on) {
+          const f = mk("div", "fld"),
+            w = mk("div", "sel"),
+            id = "s" + Math.random().toString(36).slice(2, 7);
+          const lb = mk("label", "", label);
+          lb.id = id;
+          const b = mk("button", "sel-b clay");
+          b.type = "button";
+          b.setAttribute("aria-haspopup", "listbox");
+          b.setAttribute("aria-labelledby", id);
+          const l = mk("ul");
+          l.className = "sel-l";
+          l.setAttribute("role", "listbox");
+          l.hidden = true;
+          const set = (v) => {
+            b.textContent = "";
+            b.append(
+              mk("span", "", opts.find((o) => o[0] === v)[1]),
+              mk("i", "car", "▾"),
+            );
+            [...l.children].forEach((li) =>
+              li.setAttribute("aria-selected", String(li.dataset.v === v)),
+            );
+          };
+          const close = () => {
+            w.classList.remove("open");
+            l.hidden = true;
+          };
+          const open = () => {
+            w.classList.add("open");
+            l.hidden = false;
+            (l.querySelector("[aria-selected=true]") || l.firstChild).focus();
+          };
+          opts.forEach((o) => {
+            const li = mk("li", "", o[1]);
+            li.dataset.v = o[0];
+            li.tabIndex = -1;
+            li.setAttribute("role", "option");
+            li.onclick = () => {
+              set(o[0]);
+              close();
+              b.focus();
+              on(o[0]);
+            };
+            li.onkeydown = (e) => {
+              const k = e.key;
+              if (k === "ArrowDown") {
+                e.preventDefault();
+                (li.nextSibling || li).focus();
+              } else if (k === "ArrowUp") {
+                e.preventDefault();
+                (li.previousSibling || li).focus();
+              } else if (k === "Enter" || k === " ") {
+                e.preventDefault();
+                li.click();
+              } else if (k === "Escape" || k === "Tab") {
+                close();
+                b.focus();
+              }
+            };
+            l.append(li);
+          });
+          b.onclick = () => (l.hidden ? open() : close());
+          b.onkeydown = (e) => {
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              open();
+            }
+          };
+          set(val);
+          w.append(b, l);
+          f.append(lb, w);
+          return f;
+        }
 
-function tabs(){
- const n=$('#tabs');n.textContent='';
- Object.entries(T).forEach(([k,t])=>{const b=mk('button','tab clay'+(tabs.d?'':' intro'),t.n);b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(k===cur));b.style.setProperty('--tc','var('+t.col+')');b.onclick=()=>{if(k!==cur&&!busy){cur=k;tabs.d=1;tabs();render()}};n.append(b)});
-}
+        function tabs() {
+          const n = $("#tabs");
+          n.textContent = "";
+          Object.entries(T).forEach(([k, t]) => {
+            const b = mk("button", "tab clay" + (tabs.d ? "" : " intro"), t.n);
+            b.type = "button";
+            b.setAttribute("role", "tab");
+            b.setAttribute("aria-selected", String(k === cur));
+            b.style.setProperty("--tc", "var(" + t.col + ")");
+            b.onclick = () => {
+              if (k !== cur && !busy) {
+                cur = k;
+                tabs.d = 1;
+                tabs();
+                render();
+              }
+            };
+            n.append(b);
+          });
+        }
 
-function render(){
- wipe();files=[];done=[];opt={fmt:T[cur].f[0][0],scale:'1',q:1};
- const t=T[cur],p=$('#panel');p.textContent='';
- p.append(mk('p','hint',t.hint));
- const dz=mk('div','dz clay');dz.style.setProperty('--tc','var('+t.col+')');dz.tabIndex=0;dz.setAttribute('role','button');dz.setAttribute('aria-label','Choose files to convert');
- dz.append(mk('b','',t.multi?'Drop your files here':'Drop your file here'),mk('span','','or tap to browse. It stays on your device.'));
- const inp=document.createElement('input');inp.type='file';inp.accept=t.acc;inp.multiple=!!t.multi;inp.hidden=true;
- dz.onclick=()=>inp.click();dz.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inp.click()}};
- ['dragenter','dragover'].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.add('over')}));
- ['dragleave','drop'].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.remove('over')}));
- dz.addEventListener('drop',e=>take(e.dataTransfer.files));
- inp.onchange=()=>{take(inp.files);inp.value=''};
- const chips=mk('div','chips');chips.id='chips';
- const vb=mk('div','vbox');vb.id='vb';vb.hidden=true;
- const ctl=mk('div','ctl');
- ctl.append(Select('Turn it into',t.f,opt.fmt,v=>{opt.fmt=v;qv()}));
- if(t.s)ctl.append(Select('Size',SZ,'1',v=>opt.scale=v));
- let qf=null;
- if(t.q){qf=mk('div','fld');const lb=mk('label','','Quality');lb.htmlFor='q';const r=document.createElement('input');r.type='range';r.id='q';r.min=40;r.max=100;r.value=100;
-  r.oninput=()=>{opt.q=r.value/100;lb.textContent='Quality '+r.value+'%'+(r.value>99?' · original':'')};lb.textContent='Quality 100% · original';qf.append(lb,r);ctl.append(qf)}
- const qv=()=>{if(qf)qf.style.opacity=opt.fmt==='png'?.4:1;say()};qv();
- const go=mk('button','go clay',t.go);go.type='button';go.id='go';go.onclick=run;
- const res=mk('div','res');res.id='res';
- const sy=mk('p','say','Step 1: drop a file above, then choose what to turn it into.');sy.id='say';
- const zb=mk('button','sm clay','Save all as ZIP');zb.type='button';zb.id='zb';zb.hidden=true;zb.onclick=async()=>{try{await save('squished-files.zip',await zip(done.map((d,i)=>({fn:(i+1)+'-'+d.fn,blob:d.blob}))))}catch(e){toast('ZIP failed')}};
- p.append(dz,inp,chips,vb,ctl,sy,go,zb,res);
-}
+        function render() {
+          wipe();
+          files = [];
+          done = [];
+          opt = { fmt: T[cur].f[0][0], scale: "1", q: 1 };
+          const t = T[cur],
+            p = $("#panel");
+          p.textContent = "";
+          p.append(mk("p", "hint", t.hint));
+          const dz = mk("div", "dz clay");
+          dz.style.setProperty("--tc", "var(" + t.col + ")");
+          dz.tabIndex = 0;
+          dz.setAttribute("role", "button");
+          dz.setAttribute("aria-label", "Choose files to convert");
+          dz.append(
+            mk(
+              "b",
+              "",
+              t.multi ? "Drop your files here" : "Drop your file here",
+            ),
+            mk("span", "", "or tap to browse. It stays on your device."),
+          );
+          const inp = document.createElement("input");
+          inp.type = "file";
+          inp.accept = t.acc;
+          inp.multiple = !!t.multi;
+          inp.hidden = true;
+          dz.onclick = () => inp.click();
+          dz.onkeydown = (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              inp.click();
+            }
+          };
+          ["dragenter", "dragover"].forEach((v) =>
+            dz.addEventListener(v, (e) => {
+              e.preventDefault();
+              dz.classList.add("over");
+            }),
+          );
+          ["dragleave", "drop"].forEach((v) =>
+            dz.addEventListener(v, (e) => {
+              e.preventDefault();
+              dz.classList.remove("over");
+            }),
+          );
+          dz.addEventListener("drop", (e) => take(e.dataTransfer.files));
+          inp.onchange = () => {
+            take(inp.files);
+            inp.value = "";
+          };
+          const chips = mk("div", "chips");
+          chips.id = "chips";
+          const vb = mk("div", "vbox");
+          vb.id = "vb";
+          vb.hidden = true;
+          const ctl = mk("div", "ctl");
+          ctl.append(
+            Select("Turn it into", t.f, opt.fmt, (v) => {
+              opt.fmt = v;
+              qv();
+            }),
+          );
+          if (t.s) ctl.append(Select("Size", SZ, "1", (v) => (opt.scale = v)));
+          if (cur === "pdf") {
+            opt.look = "orig";
+            opt.page = "fit";
+            opt.emb = "jpg";
+            ctl.append(
+              Select(
+                "Look",
+                [
+                  ["orig", "Original · as photographed"],
+                  ["clean", "Clear · colour, cleaner"],
+                  ["bw", "Clear · black & white scan"],
+                ],
+                "orig",
+                (v) => (opt.look = v),
+              ),
+              Select(
+                "Page",
+                [
+                  ["fit", "Fit to picture"],
+                  ["a4", "A4 page"],
+                  ["letter", "US Letter"],
+                ],
+                "fit",
+                (v) => (opt.page = v),
+              ),
+              Select(
+                "Save pictures as",
+                [
+                  ["jpg", "High-quality JPEG · smaller"],
+                  ["lossless", "Lossless · perfect, bigger"],
+                ],
+                "jpg",
+                (v) => (opt.emb = v),
+              ),
+            );
+          }
+          let qf = null;
+          if (t.q) {
+            qf = mk("div", "fld");
+            const lb = mk("label", "", "Quality");
+            lb.htmlFor = "q";
+            const r = document.createElement("input");
+            r.type = "range";
+            r.id = "q";
+            r.min = 40;
+            r.max = 100;
+            r.value = 100;
+            r.oninput = () => {
+              opt.q = r.value / 100;
+              lb.textContent =
+                "Quality " +
+                r.value +
+                "%" +
+                (r.value > 99 ? " · original" : "");
+            };
+            lb.textContent = "Quality 100% · original";
+            qf.append(lb, r);
+            ctl.append(qf);
+          }
+          const qv = () => {
+            if (qf) qf.style.opacity = opt.fmt === "png" ? 0.4 : 1;
+            say();
+          };
+          qv();
+          const go = mk("button", "go clay", t.go);
+          go.type = "button";
+          go.id = "go";
+          go.onclick = run;
+          const cb = mk("button", "sm clay", "Start over");
+          cb.type = "button";
+          cb.id = "cb";
+          cb.onclick = render;
+          const res = mk("div", "res");
+          res.id = "res";
+          const sy = mk(
+            "p",
+            "say",
+            "Step 1: drop a file above, then choose what to turn it into.",
+          );
+          sy.id = "say";
+          const zb = mk("button", "sm clay", "Save all as ZIP");
+          zb.type = "button";
+          zb.id = "zb";
+          zb.hidden = true;
+          zb.onclick = async () => {
+            try {
+              await save(
+                "squished-files.zip",
+                await zip(
+                  done.map((d, i) => ({
+                    fn: i + 1 + "-" + d.fn,
+                    blob: d.blob,
+                  })),
+                ),
+              );
+            } catch (e) {
+              toast("ZIP failed");
+            }
+          };
+          p.append(dz, inp, chips, vb, ctl, sy, go, cb, zb, res);
+        }
 
-function take(list){
- const t=T[cur];let ok=[...list].filter(f=>{
-  if(f.size>250*1048576){toast(f.name.slice(0,30)+' is too big (250 MB max)');return false}
-  if(cur==='json')return/\.(json|csv|txt|md)$/i.test(f.name)||f.type.startsWith('text/')||f.type==='application/json';
-  return f.type.startsWith(cur==='video'?'video/':'image/')});
- if(!ok.length){toast('That file type isn’t supported here');return}
- files=t.multi?[...files,...ok].slice(0,30):ok.slice(0,1);
- chips();if(t.v)video();
-}
-function chips(){queueMicrotask(say);
- const c=$('#chips');c.textContent='';
- files.forEach((f,i)=>{const im=f.type.startsWith('image/'),tx=cur==='json',d=mk('div',im||tx?'pvc'+(tx?' txt':''):'chip'),x=mk('button','','×');
-  x.type='button';x.setAttribute('aria-label','Remove '+f.name);x.onclick=()=>{files.splice(i,1);chips();if(T[cur].v)video()};
-  if(im||tx){const t=mk('div','pvt'),sz=mk('div','sz',kb(f.size));
-   if(im){const m=document.createElement('img');m.alt='Preview of '+f.name;m.src=f._u||(f._u=url(f));m.onload=()=>{if(m.naturalWidth)sz.textContent=m.naturalWidth+'×'+m.naturalHeight+' · '+kb(f.size)};m.onerror=()=>{t.textContent='No preview'};t.append(m)}
-   else{const p=mk('pre','pvx');f.slice(0,700).text().then(s=>{p.textContent=s+(f.size>700?'…':'')});t.append(p)}
-   d.append(t,mk('div','nm',f.name),sz,x)}
-  else d.append(mk('span','',f.name),mk('em','sz',kb(f.size)),x);
-  c.append(d)});
-}
-let vid=null;
-function video(){
- const vb=$('#vb');vb.textContent='';vid=null;if(!files.length){vb.hidden=true;return}
- vb.hidden=false;const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=url(files[0]);vid=v;
- const row=mk('div','row'),r=document.createElement('input');r.type='range';r.min=0;r.max=1;r.step=.01;r.value=0;r.setAttribute('aria-label','Pick a moment');
- const tm=mk('time','','0.00s');
- const upd=()=>{tm.textContent=v.currentTime.toFixed(2)+'s'};
- v.onloadedmetadata=()=>{if(v.duration===Infinity){v.currentTime=1e101;v.ontimeupdate=()=>{v.ontimeupdate=null;r.max=v.duration;v.currentTime=0}}else r.max=v.duration||1};
- v.onerror=()=>toast('This browser can’t play that video');
- v.onseeked=upd;r.oninput=()=>{v.currentTime=+r.value};
- row.append(r,tm);vb.append(v,row);
-}
+        function take(list) {
+          const t = T[cur];
+          let ok = [...list].filter((f) => {
+            if (f.size > 250 * 1048576) {
+              toast(f.name.slice(0, 30) + " is too big (250 MB max)");
+              return false;
+            }
+            if (cur === "json")
+              return (
+                /\.(json|csv|txt|md)$/i.test(f.name) ||
+                f.type.startsWith("text/") ||
+                f.type === "application/json"
+              );
+            return f.type.startsWith(cur === "video" ? "video/" : "image/");
+          });
+          if (!ok.length) {
+            toast("That file type isn’t supported here");
+            return;
+          }
+          files = t.multi ? [...files, ...ok].slice(0, 30) : ok.slice(0, 1);
+          chips();
+          if (t.v) video();
+        }
+        function chips() {
+          queueMicrotask(say);
+          const c = $("#chips");
+          c.textContent = "";
+          files.forEach((f, i) => {
+            const im = f.type.startsWith("image/"),
+              tx = cur === "json",
+              d = mk("div", im || tx ? "pvc" + (tx ? " txt" : "") : "chip"),
+              x = mk("button", "", "×");
+            x.type = "button";
+            x.setAttribute("aria-label", "Remove " + f.name);
+            x.onclick = () => {
+              files.splice(i, 1);
+              chips();
+              if (T[cur].v) video();
+            };
+            if (im || tx) {
+              const t = mk("div", "pvt"),
+                sz = mk("div", "sz", kb(f.size));
+              if (im) {
+                const m = document.createElement("img");
+                m.alt = "Preview of " + f.name;
+                m.src = f._u || (f._u = url(f));
+                m.onload = () => {
+                  if (m.naturalWidth)
+                    sz.textContent =
+                      m.naturalWidth +
+                      "×" +
+                      m.naturalHeight +
+                      " · " +
+                      kb(f.size);
+                };
+                m.onerror = () => {
+                  t.textContent = "No preview";
+                };
+                t.append(m);
+              } else {
+                const p = mk("pre", "pvx");
+                f.slice(0, 700)
+                  .text()
+                  .then((s) => {
+                    p.textContent = s + (f.size > 700 ? "…" : "");
+                  });
+                t.append(p);
+              }
+              d.append(t, mk("div", "nm", f.name), sz, x);
+              if (cur === "pdf" && files.length > 1) {
+                const r = mk("div", "mv"),
+                  mb = (a, k) => {
+                    const b = mk("button", "", a);
+                    b.type = "button";
+                    b.setAttribute(
+                      "aria-label",
+                      "Move page " + (k < 0 ? "earlier" : "later"),
+                    );
+                    b.onclick = () => {
+                      const j = i + k;
+                      if (j < 0 || j >= files.length) return;
+                      [files[i], files[j]] = [files[j], files[i]];
+                      chips();
+                    };
+                    return b;
+                  };
+                r.append(
+                  mb("◀", -1),
+                  mk("span", "sz", "Page " + (i + 1)),
+                  mb("▶", 1),
+                );
+                d.append(r);
+              }
+            } else
+              d.append(mk("span", "", f.name), mk("em", "sz", kb(f.size)), x);
+            c.append(d);
+          });
+        }
+        let vid = null;
+        function video() {
+          const vb = $("#vb");
+          vb.textContent = "";
+          vid = null;
+          if (!files.length) {
+            vb.hidden = true;
+            return;
+          }
+          vb.hidden = false;
+          const v = document.createElement("video");
+          v.muted = true;
+          v.playsInline = true;
+          v.preload = "auto";
+          v.src = url(files[0]);
+          vid = v;
+          const row = mk("div", "row"),
+            r = document.createElement("input");
+          r.type = "range";
+          r.min = 0;
+          r.max = 1;
+          r.step = 0.01;
+          r.value = 0;
+          r.setAttribute("aria-label", "Pick a moment");
+          const tm = mk("time", "", "0.00s");
+          const upd = () => {
+            tm.textContent = v.currentTime.toFixed(2) + "s";
+          };
+          v.onloadedmetadata = () => {
+            if (v.duration === Infinity) {
+              v.currentTime = 1e101;
+              v.ontimeupdate = () => {
+                v.ontimeupdate = null;
+                r.max = v.duration;
+                v.currentTime = 0;
+              };
+            } else r.max = v.duration || 1;
+          };
+          v.onerror = () => toast("This browser can’t play that video");
+          v.onseeked = upd;
+          r.oninput = () => {
+            v.currentTime = +r.value;
+          };
+          const sb = (a, d) => {
+            const b = mk("button", "sm clay", a);
+            b.type = "button";
+            b.setAttribute(
+              "aria-label",
+              d < 0 ? "Back one frame" : "Forward one frame",
+            );
+            b.onclick = () => {
+              v.currentTime = Math.max(
+                0,
+                Math.min(v.duration || 0, v.currentTime + d),
+              );
+              r.value = v.currentTime;
+            };
+            return b;
+          };
+          row.append(sb("◀", -1 / 30), r, sb("▶", 1 / 30), tm);
+          vb.append(v, row);
+        }
 
-const load=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>{URL.revokeObjectURL(u);no()};i.src=u});
-const MIME={png:'image/png',jpg:'image/jpeg',webp:'image/webp',gif:'image/gif',svg:'image/svg+xml'};
-function raster(src,w,h,fmt,scale,q){
- w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));
- if(w*h>1.2e8)throw Error('big');
- const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');
- if(fmt==='jpg'||fmt==='gif'){x.fillStyle='#fff';x.fillRect(0,0,w,h)}
- x.drawImage(src,0,0,w,h);
- if(fmt==='gif'){if(w*h>4e6)throw Error('big');return Promise.resolve({b:gif([x.getImageData(0,0,w,h)],w,h,100),w,h})}
- if(fmt==='svg')return svgWrap(c,w,h);
- return new Promise((ok,no)=>c.toBlob(b=>b&&b.type===MIME[fmt]?ok({b,w,h}):b&&fmt==='webp'?no(Error('webp')):b?ok({b,w,h}):no(Error('fail')),MIME[fmt],q));
-}
-function addRes(name,blob,ext,from,prev){
- const c=mk('div','card'),th=mk('div','th');
- if(MIME[ext]||prev){const i=document.createElement('img');i.alt='Result preview';i.src=url(MIME[ext]?blob:prev);th.append(i)}else if(ext!=='pdf'){const p=mk('pre','pvx');blob.slice(0,600).text().then(s=>{p.textContent=s});th.append(p)}else th.append(mk('div','big','PDF'));
- const fn=name+'.'+ext;
- const sz=mk('div','sz',(from?kb(from)+' → ':'')+kb(blob.size));
- const b=mk('button','sm clay','Save it');b.type='button';b.onclick=()=>save(fn,blob);
- c.append(th,mk('div','nm',fn),sz,b);$('#res').prepend(c);done.push({fn,blob});$('#zb').hidden=done.length<2;
-}
-async function save(fn,blob){
- try{const d=window.claude&&await window.claude.use('downloads');
-  if(d){await d.save({filename:fn,data:blob});toast('Saved! ✦')}
-  else{const a=document.createElement('a');a.href=url(blob);a.download=fn;a.rel='noopener';document.body.append(a);a.click();a.remove();toast('Saved! ✦')}
- }catch(e){toast(e&&e.code==='declined'?'No worries, not saved':'Couldn’t save that one')}
-}
-const csvCell=v=>{let s=v==null?'':typeof v==='object'?JSON.stringify(v):String(v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
-function say(){const s=$('#say');if(!s)return;const f=T[cur].f.find(a=>a[0]===opt.fmt),n=files.length;s.textContent=n?n+(n>1?' files':' file')+' ready → '+f[1].split(' · ')[0]+'. Hit the big button!':'Step 1: drop a file above, then choose what to turn it into.'}
-function svgWrap(c,w,h){return new Promise((ok,no)=>c.toBlob(b=>{const r=new FileReader();r.onload=()=>ok({b:new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'"><image width="'+w+'" height="'+h+'" href="'+r.result+'"/></svg>'],{type:'image/svg+xml'}),w,h});r.onerror=no;r.readAsDataURL(b)},'image/png'))}
-function gif(fr,w,h,dl){
- const o=[],P=n=>o.push(n&255,n>>8&255);
- o.push(71,73,70,56,57,97);P(w);P(h);o.push(247,0,0);
- for(let i=0;i<256;i++)o.push((i>>5)*36,(i>>2&7)*36,(i&3)*85);
- if(fr.length>1)o.push(33,255,11,78,69,84,83,67,65,80,69,50,46,48,3,1,0,0,0);
- for(const f of fr){const d=f.data,n=w*h,px=new Uint8Array(n);
-  for(let i=0;i<n;i++){const j=i*4;px[i]=d[j]>>5<<5|d[j+1]>>5<<2|d[j+2]>>6}
-  o.push(33,249,4,0);P(dl/10|0);o.push(0,0,44,0,0,0,0);P(w);P(h);o.push(0,8);
-  const D=new Map();let nx=258,b=9,bf=0,nb=0,bk=[];
-  const em=c=>{bf|=c<<nb;nb+=b;while(nb>=8){bk.push(bf&255);bf>>=8;nb-=8;if(bk.length===255){o.push(255,...bk);bk=[]}}};
-  em(256);let cu=px[0];
-  for(let i=1;i<n;i++){const k=cu<<8|px[i],v=D.get(k);
-   if(v!==undefined)cu=v;else{em(cu);if(nx===4096){em(256);D.clear();nx=258;b=9}else{if(nx>=1<<b)b++;D.set(k,nx++)}cu=px[i]}}
-  em(cu);em(257);if(nb>0)bk.push(bf&255);if(bk.length)o.push(bk.length,...bk);o.push(0)}
- o.push(59);return new Blob([new Uint8Array(o)],{type:'image/gif'});
-}
-const CT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^c>>>1:c>>>1;t[n]=c>>>0}return t})();
-const crc=u=>{let c=-1;for(let i=0;i<u.length;i++)c=CT[(c^u[i])&255]^c>>>8;return(c^-1)>>>0};
-async function zip(items){const E=new TextEncoder(),P=[],C=[];let off=0;
- for(const it of items){const n=E.encode(it.fn),d=new Uint8Array(await it.blob.arrayBuffer()),c=crc(d),h=new DataView(new ArrayBuffer(30));
-  h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x800,true);h.setUint32(14,c,true);h.setUint32(18,d.length,true);h.setUint32(22,d.length,true);h.setUint16(26,n.length,true);
-  P.push(h.buffer,n,d);
-  const g=new DataView(new ArrayBuffer(46));g.setUint32(0,0x02014b50,true);g.setUint16(4,20,true);g.setUint16(6,20,true);g.setUint16(8,0x800,true);g.setUint32(16,c,true);g.setUint32(20,d.length,true);g.setUint32(24,d.length,true);g.setUint16(28,n.length,true);g.setUint32(42,off,true);
-  C.push(g.buffer,n);off+=30+n.length+d.length}
- const cl=C.reduce((a,b)=>a+b.byteLength,0),e=new DataView(new ArrayBuffer(22));
- e.setUint32(0,0x06054b50,true);e.setUint16(8,items.length,true);e.setUint16(10,items.length,true);e.setUint32(12,cl,true);e.setUint32(16,off,true);
- return new Blob([...P,...C,e.buffer],{type:'application/zip'});
-}
-function parseCSV(s){const r=[];let w=[],c='',q=0;for(let i=0;i<s.length;i++){const ch=s[i];if(q){if(ch==='"'){if(s[i+1]==='"'){c+='"';i++}else q=0}else c+=ch}else if(ch==='"')q=1;else if(ch===','){w.push(c);c=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&s[i+1]==='\n')i++;w.push(c);c='';r.push(w);w=[]}else c+=ch}
- if(c||w.length){w.push(c);r.push(w)}return r}
-function conv(tx,m){
- if(m==='json'){const r=parseCSV(tx),h=r.shift()||[];return[JSON.stringify(r.filter(x=>x.length>1||x[0]).map(x=>{const o=Object.create(null);h.forEach((k,i)=>o[k]=x[i]??'');return o}),null,2),'json']}
- if(m==='pretty')return[JSON.stringify(JSON.parse(tx),null,2),'json'];
- if(m==='b64'){let s='';for(const b of new TextEncoder().encode(tx))s+=String.fromCharCode(b);return[btoa(s),'txt']}
- const bin=atob(tx.replace(/\s/g,''));return[new TextDecoder().decode(Uint8Array.from(bin,ch=>ch.charCodeAt(0))),'txt'];
-}
-function pdf(pages){
- const E=new TextEncoder(),parts=[],offs=[];let len=0;
- const add=d=>{const u=typeof d==='string'?E.encode(d):d;parts.push(u);len+=u.length};
- const obj=(n,fn)=>{offs[n]=len;add(n+' 0 obj\n');fn();add('\nendobj\n')};
- add('%PDF-1.4\n');
- obj(1,()=>add('<</Type/Catalog/Pages 2 0 R>>'));
- obj(2,()=>add('<</Type/Pages/Count '+pages.length+'/Kids['+pages.map((_,i)=>(5+i*3)+' 0 R').join(' ')+']>>'));
- pages.forEach((p,i)=>{const n=3+i*3,k=Math.min(1,1200/Math.max(p.w,p.h)),W=Math.round(p.w*k),H=Math.round(p.h*k),s='q '+W+' 0 0 '+H+' 0 0 cm /I Do Q';
-  obj(n,()=>{add('<</Type/XObject/Subtype/Image/Width '+p.w+'/Height '+p.h+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+p.d.length+'>>\nstream\n');add(p.d);add('\nendstream')});
-  obj(n+1,()=>add('<</Length '+s.length+'>>\nstream\n'+s+'\nendstream'));
-  obj(n+2,()=>add('<</Type/Page/Parent 2 0 R/MediaBox[0 0 '+W+' '+H+']/Resources<</XObject<</I '+n+' 0 R>>>>/Contents '+(n+1)+' 0 R>>'))});
- const x=len,tot=3+pages.length*3;add('xref\n0 '+tot+'\n0000000000 65535 f \n');
- for(let i=1;i<tot;i++)add(String(offs[i]).padStart(10,'0')+' 00000 n \n');
- add('trailer\n<</Size '+tot+'/Root 1 0 R>>\nstartxref\n'+x+'\n%%EOF');
- return new Blob(parts,{type:'application/pdf'});
-}
+        const load = (f) =>
+          new Promise((ok, no) => {
+            const u = URL.createObjectURL(f),
+              i = new Image();
+            i.onload = () => {
+              URL.revokeObjectURL(u);
+              ok(i);
+            };
+            i.onerror = () => {
+              URL.revokeObjectURL(u);
+              no();
+            };
+            i.src = u;
+          });
+        const MIME = {
+          png: "image/png",
+          jpg: "image/jpeg",
+          webp: "image/webp",
+          gif: "image/gif",
+          svg: "image/svg+xml",
+        };
+        function raster(src, w, h, fmt, scale, q) {
+          w = Math.max(1, Math.round(w * scale));
+          h = Math.max(1, Math.round(h * scale));
+          if (w * h > 1.2e8) throw Error("big");
+          const c = document.createElement("canvas");
+          c.width = w;
+          c.height = h;
+          const x = c.getContext("2d");
+          if (fmt === "jpg" || fmt === "gif") {
+            x.fillStyle = "#fff";
+            x.fillRect(0, 0, w, h);
+          }
+          x.drawImage(src, 0, 0, w, h);
+          if (fmt === "gif") {
+            if (w * h > 4e6) throw Error("big");
+            return Promise.resolve({
+              b: gif([x.getImageData(0, 0, w, h)], w, h, 100),
+              w,
+              h,
+            });
+          }
+          if (fmt === "svg") return svgWrap(c, w, h);
+          return new Promise((ok, no) =>
+            c.toBlob(
+              (b) =>
+                b && b.type === MIME[fmt]
+                  ? ok({ b, w, h })
+                  : b && fmt === "webp"
+                    ? no(Error("webp"))
+                    : b
+                      ? ok({ b, w, h })
+                      : no(Error("fail")),
+              MIME[fmt],
+              q,
+            ),
+          );
+        }
+        function addRes(name, blob, ext, from, prev) {
+          const c = mk("div", "card"),
+            th = mk("div", "th");
+          if (MIME[ext] || prev) {
+            const i = document.createElement("img");
+            i.alt = "Result preview";
+            i.src = url(MIME[ext] ? blob : prev);
+            th.append(i);
+          } else if (ext !== "pdf") {
+            const p = mk("pre", "pvx");
+            blob
+              .slice(0, 600)
+              .text()
+              .then((s) => {
+                p.textContent = s;
+              });
+            th.append(p);
+          } else th.append(mk("div", "big", "PDF"));
+          const fn = name + "." + ext;
+          const sz = mk(
+            "div",
+            "sz",
+            (from ? kb(from) + " → " : "") +
+              kb(blob.size) +
+              (from
+                ? " · " +
+                  (blob.size < from ? "−" : "+") +
+                  Math.abs(Math.round((1 - blob.size / from) * 100)) +
+                  "%"
+                : ""),
+          );
+          const b = mk("button", "sm clay", "Save it");
+          b.type = "button";
+          b.onclick = () => save(fn, blob);
+          c.append(th, mk("div", "nm", fn), sz, b);
+          $("#res").prepend(c);
+          done.push({ fn, blob });
+          $("#zb").hidden = done.length < 2;
+        }
+        async function save(fn, blob) {
+          try {
+            const d = window.claude && (await window.claude.use("downloads"));
+            if (d) {
+              await d.save({ filename: fn, data: blob });
+              toast("Saved! ✦");
+            } else {
+              const a = document.createElement("a");
+              a.href = url(blob);
+              a.download = fn;
+              a.rel = "noopener";
+              document.body.append(a);
+              a.click();
+              a.remove();
+              toast("Saved! ✦");
+            }
+          } catch (e) {
+            toast(
+              e && e.code === "declined"
+                ? "No worries, not saved"
+                : "Couldn’t save that one",
+            );
+          }
+        }
+        const csvCell = (v) => {
+          let s =
+            v == null
+              ? ""
+              : typeof v === "object"
+                ? JSON.stringify(v)
+                : String(v);
+          if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+          return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        };
+        function say() {
+          const s = $("#say");
+          if (!s) return;
+          const f = T[cur].f.find((a) => a[0] === opt.fmt),
+            n = files.length;
+          s.textContent = n
+            ? n +
+              (n > 1 ? " files" : " file") +
+              " ready → " +
+              f[1].split(" · ")[0] +
+              ". Hit the big button!"
+            : "Step 1: drop a file above, then choose what to turn it into.";
+        }
+        function svgWrap(c, w, h) {
+          return new Promise((ok, no) =>
+            c.toBlob((b) => {
+              const r = new FileReader();
+              r.onload = () =>
+                ok({
+                  b: new Blob(
+                    [
+                      '<svg xmlns="http://www.w3.org/2000/svg" width="' +
+                        w +
+                        '" height="' +
+                        h +
+                        '" viewBox="0 0 ' +
+                        w +
+                        " " +
+                        h +
+                        '"><image width="' +
+                        w +
+                        '" height="' +
+                        h +
+                        '" href="' +
+                        r.result +
+                        '"/></svg>',
+                    ],
+                    { type: "image/svg+xml" },
+                  ),
+                  w,
+                  h,
+                });
+              r.onerror = no;
+              r.readAsDataURL(b);
+            }, "image/png"),
+          );
+        }
+        function gif(fr, w, h, dl) {
+          const o = [],
+            P = (n) => o.push(n & 255, (n >> 8) & 255);
+          o.push(71, 73, 70, 56, 57, 97);
+          P(w);
+          P(h);
+          o.push(247, 0, 0);
+          for (let i = 0; i < 256; i++)
+            o.push((i >> 5) * 36, ((i >> 2) & 7) * 36, (i & 3) * 85);
+          if (fr.length > 1)
+            o.push(
+              33,
+              255,
+              11,
+              78,
+              69,
+              84,
+              83,
+              67,
+              65,
+              80,
+              69,
+              50,
+              46,
+              48,
+              3,
+              1,
+              0,
+              0,
+              0,
+            );
+          for (const f of fr) {
+            const d = f.data,
+              n = w * h,
+              px = new Uint8Array(n);
+            for (let i = 0; i < n; i++) {
+              const j = i * 4;
+              px[i] =
+                ((d[j] >> 5) << 5) | ((d[j + 1] >> 5) << 2) | (d[j + 2] >> 6);
+            }
+            o.push(33, 249, 4, 0);
+            P((dl / 10) | 0);
+            o.push(0, 0, 44, 0, 0, 0, 0);
+            P(w);
+            P(h);
+            o.push(0, 8);
+            const D = new Map();
+            let nx = 258,
+              b = 9,
+              bf = 0,
+              nb = 0,
+              bk = [];
+            const em = (c) => {
+              bf |= c << nb;
+              nb += b;
+              while (nb >= 8) {
+                bk.push(bf & 255);
+                bf >>= 8;
+                nb -= 8;
+                if (bk.length === 255) {
+                  o.push(255, ...bk);
+                  bk = [];
+                }
+              }
+            };
+            em(256);
+            let cu = px[0];
+            for (let i = 1; i < n; i++) {
+              const k = (cu << 8) | px[i],
+                v = D.get(k);
+              if (v !== undefined) cu = v;
+              else {
+                em(cu);
+                if (nx === 4096) {
+                  em(256);
+                  D.clear();
+                  nx = 258;
+                  b = 9;
+                } else {
+                  if (nx >= 1 << b) b++;
+                  D.set(k, nx++);
+                }
+                cu = px[i];
+              }
+            }
+            em(cu);
+            em(257);
+            if (nb > 0) bk.push(bf & 255);
+            if (bk.length) o.push(bk.length, ...bk);
+            o.push(0);
+          }
+          o.push(59);
+          return new Blob([new Uint8Array(o)], { type: "image/gif" });
+        }
+        const CT = (() => {
+          const t = [];
+          for (let n = 0; n < 256; n++) {
+            let c = n;
+            for (let k = 0; k < 8; k++)
+              c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+            t[n] = c >>> 0;
+          }
+          return t;
+        })();
+        const crc = (u) => {
+          let c = -1;
+          for (let i = 0; i < u.length; i++)
+            c = CT[(c ^ u[i]) & 255] ^ (c >>> 8);
+          return (c ^ -1) >>> 0;
+        };
+        async function zip(items) {
+          const E = new TextEncoder(),
+            P = [],
+            C = [];
+          let off = 0;
+          for (const it of items) {
+            const n = E.encode(it.fn),
+              d = new Uint8Array(await it.blob.arrayBuffer()),
+              c = crc(d),
+              h = new DataView(new ArrayBuffer(30));
+            h.setUint32(0, 0x04034b50, true);
+            h.setUint16(4, 20, true);
+            h.setUint16(6, 0x800, true);
+            h.setUint32(14, c, true);
+            h.setUint32(18, d.length, true);
+            h.setUint32(22, d.length, true);
+            h.setUint16(26, n.length, true);
+            P.push(h.buffer, n, d);
+            const g = new DataView(new ArrayBuffer(46));
+            g.setUint32(0, 0x02014b50, true);
+            g.setUint16(4, 20, true);
+            g.setUint16(6, 20, true);
+            g.setUint16(8, 0x800, true);
+            g.setUint32(16, c, true);
+            g.setUint32(20, d.length, true);
+            g.setUint32(24, d.length, true);
+            g.setUint16(28, n.length, true);
+            g.setUint32(42, off, true);
+            C.push(g.buffer, n);
+            off += 30 + n.length + d.length;
+          }
+          const cl = C.reduce((a, b) => a + b.byteLength, 0),
+            e = new DataView(new ArrayBuffer(22));
+          e.setUint32(0, 0x06054b50, true);
+          e.setUint16(8, items.length, true);
+          e.setUint16(10, items.length, true);
+          e.setUint32(12, cl, true);
+          e.setUint32(16, off, true);
+          return new Blob([...P, ...C, e.buffer], { type: "application/zip" });
+        }
+        function parseCSV(s) {
+          const r = [];
+          let w = [],
+            c = "",
+            q = 0;
+          for (let i = 0; i < s.length; i++) {
+            const ch = s[i];
+            if (q) {
+              if (ch === '"') {
+                if (s[i + 1] === '"') {
+                  c += '"';
+                  i++;
+                } else q = 0;
+              } else c += ch;
+            } else if (ch === '"') q = 1;
+            else if (ch === ",") {
+              w.push(c);
+              c = "";
+            } else if (ch === "\n" || ch === "\r") {
+              if (ch === "\r" && s[i + 1] === "\n") i++;
+              w.push(c);
+              c = "";
+              r.push(w);
+              w = [];
+            } else c += ch;
+          }
+          if (c || w.length) {
+            w.push(c);
+            r.push(w);
+          }
+          return r;
+        }
+        function conv(tx, m) {
+          if (m === "json") {
+            const r = parseCSV(tx),
+              h = r.shift() || [];
+            return [
+              JSON.stringify(
+                r
+                  .filter((x) => x.length > 1 || x[0])
+                  .map((x) => {
+                    const o = Object.create(null);
+                    h.forEach((k, i) => (o[k] = x[i] ?? ""));
+                    return o;
+                  }),
+                null,
+                2,
+              ),
+              "json",
+            ];
+          }
+          if (m === "pretty")
+            return [JSON.stringify(JSON.parse(tx), null, 2), "json"];
+          if (m === "b64") {
+            let s = "";
+            for (const b of new TextEncoder().encode(tx))
+              s += String.fromCharCode(b);
+            return [btoa(s), "txt"];
+          }
+          const bin = atob(tx.replace(/\s/g, ""));
+          return [
+            new TextDecoder().decode(
+              Uint8Array.from(bin, (ch) => ch.charCodeAt(0)),
+            ),
+            "txt",
+          ];
+        }
+        const PS = { fit: null, a4: [595, 842], letter: [612, 792] };
+        function enhance(a, w, h, bw) {
+          const n = w * h,
+            hi = new Uint32Array(256);
+          for (let i = 0; i < n; i++)
+            hi[
+              (a[i * 4] * 0.299 + a[i * 4 + 1] * 0.587 + a[i * 4 + 2] * 0.114) |
+                0
+            ]++;
+          let c = 0,
+            lo = 0,
+            up = 255;
+          while (lo < 254 && (c += hi[lo]) < n * 0.01) lo++;
+          c = 0;
+          while (up > 1 && (c += hi[up]) < n * 0.01) up--;
+          const sc = 255 / Math.max(1, up - lo),
+            L = new Uint8Array(256);
+          for (let v = 0; v < 256; v++) {
+            let t = (v - lo) * sc;
+            t = t < 0 ? 0 : t > 255 ? 255 : t;
+            L[v] = t > 205 ? 255 : t;
+          }
+          if (!bw) {
+            for (let i = 0; i < n * 4; i += 4) {
+              a[i] = L[a[i]];
+              a[i + 1] = L[a[i + 1]];
+              a[i + 2] = L[a[i + 2]];
+            }
+            return;
+          }
+          const g = new Uint8Array(n);
+          for (let i = 0; i < n; i++)
+            g[i] =
+              L[
+                (a[i * 4] * 0.299 +
+                  a[i * 4 + 1] * 0.587 +
+                  a[i * 4 + 2] * 0.114) |
+                  0
+              ];
+          let I = null;
+          if (n < 16e6) {
+            I = new Uint32Array((w + 1) * (h + 1));
+            for (let y = 1; y <= h; y++) {
+              let r = 0;
+              for (let x = 1; x <= w; x++) {
+                r += g[(y - 1) * w + x - 1];
+                I[y * (w + 1) + x] = I[(y - 1) * (w + 1) + x] + r;
+              }
+            }
+          }
+          const R = Math.max(8, Math.round(Math.min(w, h) / 40));
+          for (let y = 0; y < h; y++)
+            for (let x = 0; x < w; x++) {
+              const i = y * w + x;
+              let v;
+              if (I) {
+                const x0 = Math.max(0, x - R),
+                  x1 = Math.min(w, x + R + 1),
+                  y0 = Math.max(0, y - R),
+                  y1 = Math.min(h, y + R + 1),
+                  m =
+                    (I[y1 * (w + 1) + x1] -
+                      I[y0 * (w + 1) + x1] -
+                      I[y1 * (w + 1) + x0] +
+                      I[y0 * (w + 1) + x0]) /
+                    ((x1 - x0) * (y1 - y0));
+                v = g[i] < m * 0.92 ? 0 : 255;
+              } else v = g[i] < 140 ? 0 : 255;
+              const j = i * 4;
+              a[j] = a[j + 1] = a[j + 2] = v;
+            }
+        }
+        async function mkPage(f, o) {
+          const i = await load(f),
+            k = +o.scale,
+            w = Math.round((i.naturalWidth || 1024) * k),
+            h = Math.round((i.naturalHeight || 1024) * k);
+          if (w * h > 1.2e8) throw 0;
+          const c = document.createElement("canvas");
+          c.width = w;
+          c.height = h;
+          const x = c.getContext("2d");
+          x.fillStyle = "#fff";
+          x.fillRect(0, 0, w, h);
+          x.drawImage(i, 0, 0, w, h);
+          const m = o.look || "orig";
+          if (m !== "orig") {
+            const id = x.getImageData(0, 0, w, h);
+            enhance(id.data, w, h, m === "bw");
+            x.putImageData(id, 0, 0);
+          }
+          const pv = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.7)),
+            bw = m === "bw";
+          if (
+            !(bw || o.emb === "lossless") ||
+            typeof CompressionStream === "undefined"
+          ) {
+            const jb = await new Promise((r) => c.toBlob(r, "image/jpeg", o.q));
+            return { d: new Uint8Array(await jb.arrayBuffer()), w, h, pv };
+          }
+          const px = x.getImageData(0, 0, w, h).data,
+            n = w * h,
+            u = new Uint8Array(n * (bw ? 1 : 3));
+          for (let j = 0, t = 0; j < n; j++) {
+            if (bw) u[j] = px[j * 4];
+            else {
+              u[t++] = px[j * 4];
+              u[t++] = px[j * 4 + 1];
+              u[t++] = px[j * 4 + 2];
+            }
+          }
+          const d = new Uint8Array(
+            await new Response(
+              new Blob([u])
+                .stream()
+                .pipeThrough(new CompressionStream("deflate")),
+            ).arrayBuffer(),
+          );
+          return { d, w, h, pv, z: 1, g: bw };
+        }
+        function pdf(pages, ps) {
+          const E = new TextEncoder(),
+            parts = [],
+            offs = [];
+          let len = 0;
+          const add = (d) => {
+            const u = typeof d === "string" ? E.encode(d) : d;
+            parts.push(u);
+            len += u.length;
+          };
+          const obj = (n, fn) => {
+            offs[n] = len;
+            add(n + " 0 obj\n");
+            fn();
+            add("\nendobj\n");
+          };
+          add("%PDF-1.4\n");
+          obj(1, () => add("<</Type/Catalog/Pages 2 0 R>>"));
+          obj(2, () =>
+            add(
+              "<</Type/Pages/Count " +
+                pages.length +
+                "/Kids[" +
+                pages.map((_, i) => 5 + i * 3 + " 0 R").join(" ") +
+                "]>>",
+            ),
+          );
+          pages.forEach((p, i) => {
+            const n = 3 + i * 3;
+            let PW,
+              PH,
+              W,
+              H,
+              X = 0,
+              Y = 0;
+            if (ps) {
+              const Ls = p.w > p.h;
+              PW = Ls ? ps[1] : ps[0];
+              PH = Ls ? ps[0] : ps[1];
+              const k = Math.min((PW - 40) / p.w, (PH - 40) / p.h);
+              W = p.w * k;
+              H = p.h * k;
+              X = (PW - W) / 2;
+              Y = (PH - H) / 2;
+            } else {
+              const k = Math.min(1, 1200 / Math.max(p.w, p.h));
+              PW = W = Math.round(p.w * k);
+              PH = H = Math.round(p.h * k);
+            }
+            const s =
+              "q " +
+              W.toFixed(2) +
+              " 0 0 " +
+              H.toFixed(2) +
+              " " +
+              X.toFixed(2) +
+              " " +
+              Y.toFixed(2) +
+              " cm /I Do Q";
+            obj(n, () => {
+              add(
+                "<</Type/XObject/Subtype/Image/Width " +
+                  p.w +
+                  "/Height " +
+                  p.h +
+                  "/ColorSpace/" +
+                  (p.g ? "DeviceGray" : "DeviceRGB") +
+                  "/BitsPerComponent 8/Filter/" +
+                  (p.z ? "FlateDecode" : "DCTDecode") +
+                  "/Length " +
+                  p.d.length +
+                  ">>\nstream\n",
+              );
+              add(p.d);
+              add("\nendstream");
+            });
+            obj(n + 1, () =>
+              add("<</Length " + s.length + ">>\nstream\n" + s + "\nendstream"),
+            );
+            obj(n + 2, () =>
+              add(
+                "<</Type/Page/Parent 2 0 R/MediaBox[0 0 " +
+                  PW +
+                  " " +
+                  PH +
+                  "]/Resources<</XObject<</I " +
+                  n +
+                  " 0 R>>>>/Contents " +
+                  (n + 1) +
+                  " 0 R>>",
+              ),
+            );
+          });
+          const x = len,
+            tot = 3 + pages.length * 3;
+          add("xref\n0 " + tot + "\n0000000000 65535 f \n");
+          for (let i = 1; i < tot; i++)
+            add(String(offs[i]).padStart(10, "0") + " 00000 n \n");
+          add(
+            "trailer\n<</Size " +
+              tot +
+              "/Root 1 0 R>>\nstartxref\n" +
+              x +
+              "\n%%EOF",
+          );
+          return new Blob(parts, { type: "application/pdf" });
+        }
 
-async function run(){
- if(busy)return;
- if(!files.length){toast('Drop a file first, please!');return}
- const g=$('#go'),o=opt;busy=true;g.disabled=true;g.textContent='Squishing…';
- try{
-  if(cur==='image'){
-   for(const f of files){try{const i=await load(f),r=await raster(i,i.naturalWidth||1024,i.naturalHeight||1024,o.fmt,+o.scale,o.q);addRes(base(f.name),r.b,o.fmt,f.size)}catch(e){toast('Couldn’t convert '+f.name.slice(0,30))}}
-  }else if(cur==='video'){
-   if(!vid||!vid.videoWidth)throw Error('v');
-   const r=await raster(vid,vid.videoWidth,vid.videoHeight,o.fmt,+o.scale,o.q);
-   addRes(base(files[0].name)+'-'+vid.currentTime.toFixed(2)+'s',r.b,o.fmt,0);
-  }else if(cur==='pdf'){
-   const pages=[];
-   for(const f of files){try{const i=await load(f),r=await raster(i,i.naturalWidth||1024,i.naturalHeight||1024,'jpg',+o.scale,o.q);pages.push({d:new Uint8Array(await r.b.arrayBuffer()),w:r.w,h:r.h})}catch(e){toast('Skipped '+f.name.slice(0,30))}}
-   if(pages.length){const b=pdf(pages);addRes('squished-pictures',b,'pdf',0,new Blob([pages[0].d],{type:'image/jpeg'}))}
-  }else if(o.fmt!=='csv'){
-   const r=conv(await files[0].text(),o.fmt);addRes(base(files[0].name),new Blob([r[0]],{type:'text/plain'}),r[1],files[0].size);
-  }else{
-   let d=JSON.parse(await files[0].text());if(!Array.isArray(d))d=[d];
-   d=d.map(r=>r&&typeof r==='object'&&!Array.isArray(r)?r:{value:r});
-   if(!d.length)throw Error('empty');
-   const h=[...new Set(d.flatMap(r=>Object.keys(r)))];
-   const csv=[h.map(csvCell).join(','),...d.map(r=>h.map(k=>csvCell(r[k])).join(','))].join('\r\n');
-   addRes(base(files[0].name),new Blob([csv],{type:'text/csv'}),'csv',files[0].size);
-  }
- }catch(e){toast(cur==='video'?'Wait for the video to load, then try again':cur==='json'?'That doesn’t look like valid JSON':'Something went wrong, sorry!')}
- busy=false;g.disabled=false;g.textContent=T[cur].go;
-}
-(()=>{const R=document.documentElement,mq=matchMedia('(prefers-color-scheme:dark)');
- const nz=f=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d'),d=x.createImageData(128,128),a=d.data;for(let i=0;i<a.length;i+=4)f(a,i);x.putImageData(d,0,0);return'url('+c.toDataURL('image/png')+')'};
- const gen=()=>{const dk=R.dataset.theme?R.dataset.theme==='dark':mq.matches,amp=dk?34:70;
-  R.style.setProperty('--pg',nz((a,i)=>{const v=128+(Math.random()-.5)*amp;a[i]=a[i+1]=a[i+2]=v;a[i+3]=255}));
-  R.style.setProperty('--grain',nz((a,i)=>{const r=Math.random();a[i]=51;a[i+1]=33;a[i+2]=20;a[i+3]=r>.6?(r-.6)*300:0}))};
- try{gen();mq.addEventListener('change',gen)}catch(e){}})();
-if(!matchMedia('(prefers-reduced-motion:reduce)').matches){
- let ly=scrollY,sv=0,on=false;const cl=(n,a,b)=>Math.max(a,Math.min(b,n)),st=new WeakMap();
- const P={panel:{K:.018,C:.04,F:.00066,L:1.5},shield:{K:.026,C:.05,F:.0009,L:1.9}};
- const tick=()=>{const y=scrollY,v=y-ly;ly=y;const pv=sv;sv+=(v-sv)*.18;const ac=sv-pv;let live=Math.abs(sv)>.05;
-  document.querySelectorAll('.panel,.shield').forEach(e=>{const q=P[e.classList.contains('shield')?'shield':'panel'],s=st.get(e)||st.set(e,{a:0,w:0,b:0,u:0}).get(e);
-   s.w+=cl(sv,-60,60)*q.F-q.K*s.a-q.C*s.w;s.a=cl(s.a+s.w,-q.L,q.L);s.u+=cl(ac,-20,20)*q.F*1.5-q.K*1.4*s.b-q.C*s.u;s.b=cl(s.b+s.u,-q.L/2,q.L/2);
-   const idle=!(Math.abs(s.a)+Math.abs(s.w)+Math.abs(s.b)+Math.abs(s.u)>.02);if(idle){s.a=s.w=s.b=s.u=0}else live=true;
-   const t=e.style;if(idle){t.transform=t.filter=t.willChange=''}else{t.willChange='transform,filter';t.transform='perspective(1400px) rotateX('+s.a.toFixed(3)+'deg) rotateY('+s.b.toFixed(3)+'deg)';t.filter='drop-shadow('+(s.b*3).toFixed(1)+'px '+(1+Math.abs(s.a)*1.5).toFixed(1)+'px 5px rgba(60,35,15,.18))'}});
-  if(live)requestAnimationFrame(tick);else on=false};
- const kick=()=>{if(!on){on=true;requestAnimationFrame(tick)}};
- addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);
- kick();
-}
-tabs();render();
-})();
-</script>
-</body>
+        async function run() {
+          if (busy) return;
+          if (!files.length) {
+            toast("Drop a file first, please!");
+            return;
+          }
+          const g = $("#go"),
+            o = opt;
+          busy = true;
+          g.disabled = true;
+          g.textContent = "Squishing…";
+          try {
+            if (cur === "image" || cur === "shrink") {
+              for (const f of files) {
+                try {
+                  const i = await load(f),
+                    W = i.naturalWidth || 1024,
+                    H = i.naturalHeight || 1024;
+                  let fm = o.fmt,
+                    r;
+                  if (fm === "smart") {
+                    const c = [];
+                    for (const q of ["png", "webp"].concat(
+                      f.type === "image/jpeg" ? ["jpg"] : [],
+                    )) {
+                      try {
+                        c.push([
+                          q,
+                          await raster(
+                            i,
+                            W,
+                            H,
+                            q,
+                            +o.scale,
+                            q === "png" ? 1 : Math.max(o.q, 0.95),
+                          ),
+                        ]);
+                      } catch (e) {}
+                    }
+                    c.sort((a, b) => a[1].b.size - b[1].b.size);
+                    [fm, r] = c[0];
+                  } else r = await raster(i, W, H, fm, +o.scale, o.q);
+                  addRes(base(f.name), r.b, fm, f.size);
+                } catch (e) {
+                  toast("Couldn’t convert " + f.name.slice(0, 30));
+                }
+              }
+            } else if (cur === "video") {
+              if (!vid || !vid.videoWidth) throw Error("v");
+              const r = await raster(
+                vid,
+                vid.videoWidth,
+                vid.videoHeight,
+                o.fmt,
+                +o.scale,
+                o.q,
+              );
+              addRes(
+                base(files[0].name) + "-" + vid.currentTime.toFixed(2) + "s",
+                r.b,
+                o.fmt,
+                0,
+              );
+            } else if (cur === "pdf") {
+              const pages = [];
+              for (const f of files) {
+                try {
+                  pages.push(await mkPage(f, o));
+                } catch (e) {
+                  toast("Skipped " + f.name.slice(0, 30));
+                }
+              }
+              if (pages.length) {
+                const b = pdf(pages, PS[o.page]);
+                addRes("squished-pictures", b, "pdf", 0, pages[0].pv);
+              }
+            } else if (o.fmt !== "csv") {
+              const r = conv(await files[0].text(), o.fmt);
+              addRes(
+                base(files[0].name),
+                new Blob([r[0]], { type: "text/plain" }),
+                r[1],
+                files[0].size,
+              );
+            } else {
+              let d = JSON.parse(await files[0].text());
+              if (!Array.isArray(d)) d = [d];
+              d = d.map((r) =>
+                r && typeof r === "object" && !Array.isArray(r)
+                  ? r
+                  : { value: r },
+              );
+              if (!d.length) throw Error("empty");
+              const h = [...new Set(d.flatMap((r) => Object.keys(r)))];
+              const csv = [
+                h.map(csvCell).join(","),
+                ...d.map((r) => h.map((k) => csvCell(r[k])).join(",")),
+              ].join("\r\n");
+              addRes(
+                base(files[0].name),
+                new Blob([csv], { type: "text/csv" }),
+                "csv",
+                files[0].size,
+              );
+            }
+          } catch (e) {
+            toast(
+              cur === "video"
+                ? "Wait for the video to load, then try again"
+                : cur === "json"
+                  ? "That doesn’t look like valid JSON"
+                  : "Something went wrong, sorry!",
+            );
+          }
+          busy = false;
+          g.disabled = false;
+          g.textContent = T[cur].go;
+        }
+        (() => {
+          const R = document.documentElement,
+            mq = matchMedia("(prefers-color-scheme:dark)");
+          const nz = (f) => {
+            const c = document.createElement("canvas");
+            c.width = c.height = 128;
+            const x = c.getContext("2d"),
+              d = x.createImageData(128, 128),
+              a = d.data;
+            for (let i = 0; i < a.length; i += 4) f(a, i);
+            x.putImageData(d, 0, 0);
+            return "url(" + c.toDataURL("image/png") + ")";
+          };
+          const gen = () => {
+            const dk = R.dataset.theme
+                ? R.dataset.theme === "dark"
+                : mq.matches,
+              amp = dk ? 34 : 70;
+            R.style.setProperty(
+              "--pg",
+              nz((a, i) => {
+                const v = 128 + (Math.random() - 0.5) * amp;
+                a[i] = a[i + 1] = a[i + 2] = v;
+                a[i + 3] = 255;
+              }),
+            );
+            R.style.setProperty(
+              "--grain",
+              nz((a, i) => {
+                const r = Math.random();
+                a[i] = 51;
+                a[i + 1] = 33;
+                a[i + 2] = 20;
+                a[i + 3] = r > 0.6 ? (r - 0.6) * 300 : 0;
+              }),
+            );
+          };
+          try {
+            gen();
+            mq.addEventListener("change", gen);
+          } catch (e) {}
+        })();
+        if (!matchMedia("(prefers-reduced-motion:reduce)").matches) {
+          let ly = scrollY,
+            sv = 0,
+            on = false;
+          const cl = (n, a, b) => Math.max(a, Math.min(b, n)),
+            st = new WeakMap();
+          const P = {
+            panel: { K: 0.018, C: 0.04, F: 0.00066, L: 1.5 },
+            shield: { K: 0.026, C: 0.05, F: 0.0009, L: 1.9 },
+          };
+          const tick = () => {
+            if (files.length || done.length) {
+              document.querySelectorAll(".panel,.shield").forEach((e) => {
+                const s = st.get(e);
+                if (s) s.a = s.w = s.b = s.u = 0;
+                const t = e.style;
+                t.transform = t.filter = t.willChange = "";
+              });
+              on = false;
+              sv = 0;
+              ly = scrollY;
+              return;
+            }
+            const y = scrollY,
+              v = y - ly;
+            ly = y;
+            const pv = sv;
+            sv += (v - sv) * 0.18;
+            const ac = sv - pv;
+            let live = Math.abs(sv) > 0.05;
+            document.querySelectorAll(".panel,.shield").forEach((e) => {
+              const q = P[e.classList.contains("shield") ? "shield" : "panel"],
+                s = st.get(e) || st.set(e, { a: 0, w: 0, b: 0, u: 0 }).get(e);
+              s.w += cl(sv, -60, 60) * q.F - q.K * s.a - q.C * s.w;
+              s.a = cl(s.a + s.w, -q.L, q.L);
+              s.u += cl(ac, -20, 20) * q.F * 1.5 - q.K * 1.4 * s.b - q.C * s.u;
+              s.b = cl(s.b + s.u, -q.L / 2, q.L / 2);
+              const idle = !(
+                Math.abs(s.a) + Math.abs(s.w) + Math.abs(s.b) + Math.abs(s.u) >
+                0.02
+              );
+              if (idle) {
+                s.a = s.w = s.b = s.u = 0;
+              } else live = true;
+              const t = e.style;
+              if (idle) {
+                t.transform = t.filter = t.willChange = "";
+              } else {
+                t.willChange = "transform,filter";
+                t.transform =
+                  "perspective(1400px) rotateX(" +
+                  s.a.toFixed(3) +
+                  "deg) rotateY(" +
+                  s.b.toFixed(3) +
+                  "deg)";
+                t.filter =
+                  "drop-shadow(" +
+                  (s.b * 3).toFixed(1) +
+                  "px " +
+                  (1 + Math.abs(s.a) * 1.5).toFixed(1) +
+                  "px 5px rgba(60,35,15,.18))";
+              }
+            });
+            if (live) requestAnimationFrame(tick);
+            else on = false;
+          };
+          const kick = () => {
+            if (!on) {
+              on = true;
+              requestAnimationFrame(tick);
+            }
+          };
+          addEventListener("scroll", kick, { passive: true });
+          addEventListener("resize", kick);
+          kick();
+        }
+        addEventListener("paste", (e) => {
+          const l = [...((e.clipboardData && e.clipboardData.files) || [])];
+          if (l.length) take(l);
+        });
+        tabs();
+        render();
+      })();
+    </script>
+  </body>
 </html>
