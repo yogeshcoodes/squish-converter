@@ -1531,6 +1531,61 @@
       .pvc[draggable="true"] {
         cursor: grab;
       }
+      .mbox {
+        position: relative;
+        padding-top: 54px;
+      }
+      .mbox .mn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        min-height: 36px;
+        padding: 2px 14px;
+        font-size: 1rem;
+      }
+      .mbox button.on {
+        background: var(--c3);
+      }
+      .cr i[data-k="nw"] {
+        left: 2px;
+        top: 2px;
+      }
+      .cr i[data-k="ne"] {
+        right: 2px;
+        top: 2px;
+        left: auto;
+      }
+      .cr i[data-k="sw"] {
+        left: 2px;
+        bottom: 2px;
+        top: auto;
+      }
+      .cr i[data-k="se"] {
+        right: 2px;
+        bottom: 2px;
+        left: auto;
+        top: auto;
+      }
+      .dov {
+        position: fixed;
+        inset: 12px;
+        z-index: 65;
+        display: none;
+        place-items: center;
+        border: 4px dashed var(--c1);
+        border-radius: 26px;
+        background: var(--bg);
+        opacity: 0.94;
+        font:
+          700 clamp(1.8rem, 6vw, 3rem) Caveat,
+          cursive;
+        color: var(--ink);
+        pointer-events: none;
+      }
+      .dov.on {
+        display: grid;
+        animation: pop 0.2s;
+      }
       @media (prefers-reduced-motion: reduce) {
         * {
           animation: none !important;
@@ -1866,7 +1921,7 @@
               dz.classList.remove("over");
             }),
           );
-          dz.addEventListener("drop", (e) => take(e.dataTransfer.files));
+
           inp.onchange = () => {
             take(inp.files);
             inp.value = "";
@@ -2597,7 +2652,7 @@
           return b;
         }
         async function refresh(f) {
-          if (!f._r && !f._c) {
+          if (!f._r && !f._c && !f._k) {
             f._p = f._d = null;
             return;
           }
@@ -2607,7 +2662,15 @@
             p = document.createElement("canvas");
           p.width = Math.max(1, Math.round(cv.width * s));
           p.height = Math.max(1, Math.round(cv.height * s));
-          p.getContext("2d").drawImage(cv, 0, 0, p.width, p.height);
+          {
+            const px = p.getContext("2d");
+            px.drawImage(cv, 0, 0, p.width, p.height);
+            if (f._k && f._k !== "orig") {
+              const id = px.getImageData(0, 0, p.width, p.height);
+              enhance(id.data, p.width, p.height, f._k === "bw");
+              px.putImageData(id, 0, 0);
+            }
+          }
           f._d = cv.width + "×" + cv.height;
           f._p = url(await new Promise((r) => p.toBlob(r, "image/png")));
         }
@@ -2621,8 +2684,10 @@
             cr = mk("div", "cr"),
             cl = (n, a, b) => Math.max(a, Math.min(b, n));
           let r = f._r || 0,
-            g = edit(im, { _r: r }),
-            c = f._c ? { ...f._c } : { x: 0.08, y: 0.08, w: 0.84, h: 0.84 },
+            lk = f._k || opt.look || "orig",
+            lt = 0,
+            g,
+            c = f._c ? { ...f._c } : { x: 0, y: 0, w: 1, h: 1 },
             d = null,
             dirty = 0;
           const kd = (e) => {
@@ -2647,13 +2712,29 @@
                 c.h * 100 +
                 "%";
             };
+          const show = () => {
+            const b = edit(im, { _r: r }),
+              s = Math.min(1, 1000 / Math.max(b.width, b.height)),
+              p = document.createElement("canvas");
+            p.width = Math.round(b.width * s) || 1;
+            p.height = Math.round(b.height * s) || 1;
+            const x = p.getContext("2d");
+            x.drawImage(b, 0, 0, p.width, p.height);
+            if (lk !== "orig") {
+              const id = x.getImageData(0, 0, p.width, p.height);
+              enhance(id.data, p.width, p.height, lk === "bw");
+              x.putImageData(id, 0, 0);
+            }
+            return p;
+          };
+          g = show();
           const fit = (a) => {
             dirty = 1;
             const W = g.width,
               H = g.height;
-            let w = 0.84,
-              h = a ? (w * W) / (a * H) : 0.84;
-            if (h > 0.84) {
+            let w = a ? 0.84 : 1,
+              h = a ? (w * W) / (a * H) : 1;
+            if (a && h > 0.84) {
               h = 0.84;
               w = (h * a * H) / W;
             }
@@ -2662,7 +2743,7 @@
           };
           const rot = (k) => {
             r = (r + k + 360) % 360;
-            const ng = edit(im, { _r: r });
+            const ng = show();
             cw.replaceChild(ng, g);
             g = ng;
             fit(0);
@@ -2731,9 +2812,10 @@
             ["A4", 1 / 1.414],
           ].forEach(([t, a]) => row.append(btn(t, () => fit(a))));
           const save = async (force) => {
-              if (!force && !dirty) return;
+              if (!force && !dirty && !lt) return;
               f._r = r;
               f._c = c.w > 0.97 && c.h > 0.97 ? null : { ...c };
+              if (lt) f._k = lk;
               await refresh(f);
             },
             go = async (k) => {
@@ -2750,6 +2832,36 @@
               }
               close();
             };
+          const lrow = mk("div", "mrow"),
+            mn = btn("– Minimize", async () => {
+              await save();
+              chips();
+              close();
+            });
+          mn.className += " mn";
+          mn.title = "Close the editor and keep your changes";
+          if (cur === "pdf") {
+            lrow.append(mk("span", "cnt", "Look:"));
+            [
+              ["orig", "Original"],
+              ["clean", "Clear colour"],
+              ["bw", "Clear B&W"],
+            ].forEach(([v, t]) => {
+              const b = btn(t, () => {
+                lk = v;
+                lt = 1;
+                const ng = show();
+                cw.replaceChild(ng, g);
+                g = ng;
+                lrow
+                  .querySelectorAll("button")
+                  .forEach((x) => x.classList.toggle("on", x.dataset.v === lk));
+              });
+              b.dataset.v = v;
+              b.classList.toggle("on", v === lk);
+              lrow.append(b);
+            });
+          }
           const nav = mk("div", "mrow");
           if (L.length > 1) {
             nav.append(
@@ -2782,7 +2894,7 @@
               if (n.length) await cropper(n[Math.min(ix, n.length - 1)], 1);
               close();
             },
-            xb = btn("✕", rm);
+            xb = btn("✕ Remove image", rm);
           xb.className += " cross";
           xb.title = "Remove this picture";
           xb.setAttribute("aria-label", "Remove this picture");
@@ -2806,6 +2918,7 @@
             ),
           );
           bx.append(
+            mn,
             mk("h2", "", "Crop & rotate"),
             nav,
             mk(
@@ -2815,6 +2928,7 @@
             ),
             cw,
             row,
+            lrow,
             row2,
           );
           bg.append(bx);
@@ -2911,7 +3025,7 @@
           x.fillStyle = "#fff";
           x.fillRect(0, 0, w, h);
           x.drawImage(i, 0, 0, w, h);
-          const m = o.look || "orig";
+          const m = f._k || o.look || "orig";
           if (m !== "orig") {
             const id = x.getImageData(0, 0, w, h);
             enhance(id.data, w, h, m === "bw");
@@ -3294,6 +3408,44 @@
         addEventListener("paste", (e) => {
           const l = [...((e.clipboardData && e.clipboardData.files) || [])];
           if (l.length) take(l);
+        });
+        let dc = 0;
+        const ov = mk("div", "dov", "Drop to add your files");
+        document.body.append(ov);
+        addEventListener("dragenter", (e) => {
+          if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) {
+            dc++;
+            ov.classList.add("on");
+          }
+        });
+        addEventListener("dragleave", () => {
+          dc = Math.max(0, dc - 1);
+          if (!dc) ov.classList.remove("on");
+        });
+        addEventListener("dragover", (e) => e.preventDefault());
+        addEventListener("drop", (e) => {
+          e.preventDefault();
+          dc = 0;
+          ov.classList.remove("on");
+          const l = e.dataTransfer ? [...e.dataTransfer.files] : [];
+          if (!l.length || document.querySelector(".mod")) return;
+          const f = l[0],
+            k = f.type.startsWith("video/")
+              ? "video"
+              : f.type.startsWith("image/")
+                ? ["pdf", "shrink"].includes(cur)
+                  ? cur
+                  : "image"
+                : /\.(json|csv|txt|md)$/i.test(f.name)
+                  ? "json"
+                  : cur;
+          if (k !== cur && !busy) {
+            cur = k;
+            tabs.d = 1;
+            tabs();
+            render();
+          }
+          take(l);
         });
         tabs();
         render();
