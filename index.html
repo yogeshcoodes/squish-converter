@@ -1357,6 +1357,138 @@
           width: 100%;
         }
       }
+      .res {
+        max-height: min(60vh, 520px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 18px 12px 10px;
+      }
+      .res:not(:empty) {
+        border: 2px dashed var(--mut);
+        border-radius: 18px;
+      }
+      .pvc .mv button {
+        width: auto;
+        min-width: 34px;
+        padding: 0 9px;
+      }
+      .mod {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: grid;
+        place-items: center;
+        padding: 14px;
+        background: rgba(30, 20, 12, 0.62);
+        animation: pop 0.25s;
+      }
+      .mbox {
+        width: min(94vw, 700px);
+        max-height: 92vh;
+        overflow: auto;
+        padding: 18px;
+        background:
+          var(--pg) 0 0/128px 128px,
+          var(--card);
+        background-blend-mode: overlay, normal;
+        border: 3px solid var(--ink);
+        border-radius: var(--w1);
+        box-shadow: 8px 8px 0 var(--ink);
+        text-align: center;
+      }
+      .mbox h2 {
+        font-size: 2rem;
+        margin-bottom: 6px;
+      }
+      .cw {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+        line-height: 0;
+        overflow: hidden;
+        touch-action: none;
+        user-select: none;
+        border: 2px solid var(--ink);
+        border-radius: 12px;
+        background: conic-gradient(
+            #0000000f 25%,
+            transparent 0 50%,
+            #0000000f 0 75%,
+            transparent 0
+          )
+          0 0/14px 14px;
+      }
+      .cw canvas {
+        display: block;
+        max-width: 100%;
+        max-height: 48vh;
+      }
+      .cr {
+        position: absolute;
+        border: 2px dashed #fff;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.48);
+        cursor: move;
+        touch-action: none;
+      }
+      .cr i {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        background: var(--c3);
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+      }
+      .cr i[data-k="nw"] {
+        left: -13px;
+        top: -13px;
+        cursor: nwse-resize;
+      }
+      .cr i[data-k="ne"] {
+        right: -13px;
+        top: -13px;
+        cursor: nesw-resize;
+      }
+      .cr i[data-k="sw"] {
+        left: -13px;
+        bottom: -13px;
+        cursor: nesw-resize;
+      }
+      .cr i[data-k="se"] {
+        right: -13px;
+        bottom: -13px;
+        cursor: nwse-resize;
+      }
+      .mrow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 12px;
+      }
+      .cnt {
+        font:
+          700 1.4rem Caveat,
+          cursive;
+        color: var(--c1);
+      }
+      .mbox button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .mbox .tick {
+        min-width: 48px;
+        padding: 6px 12px;
+        font-size: 1.5rem;
+        line-height: 1;
+        background: var(--c3);
+      }
+      .mbox .tick.ok {
+        background: var(--c2);
+        animation: pop 0.4s;
+      }
+      #toast {
+        z-index: 70;
+      }
       @media (prefers-reduced-motion: reduce) {
         * {
           animation: none !important;
@@ -1857,13 +1989,11 @@
               if (im) {
                 const m = document.createElement("img");
                 m.alt = "Preview of " + f.name;
-                m.src = f._u || (f._u = url(f));
+                m.src = f._p || f._u || (f._u = url(f));
                 m.onload = () => {
                   if (m.naturalWidth)
                     sz.textContent =
-                      m.naturalWidth +
-                      "×" +
-                      m.naturalHeight +
+                      (f._d || m.naturalWidth + "×" + m.naturalHeight) +
                       " · " +
                       kb(f.size);
                 };
@@ -1881,6 +2011,26 @@
                 t.append(p);
               }
               d.append(t, mk("div", "nm", f.name), sz, x);
+              if (im) {
+                const tb = mk("div", "mv"),
+                  eb = (a, l, fn) => {
+                    const b = mk("button", "", a);
+                    b.type = "button";
+                    b.setAttribute("aria-label", l);
+                    b.title = l;
+                    b.onclick = fn;
+                    return b;
+                  };
+                tb.append(
+                  eb("⟳", "Rotate 90 degrees", () => {
+                    f._r = ((f._r || 0) + 90) % 360;
+                    f._c = null;
+                    refresh(f).then(chips);
+                  }),
+                  eb("✂ Crop", "Crop and rotate", () => cropper(f)),
+                );
+                d.append(tb);
+              }
               if (cur === "pdf" && files.length > 1) {
                 const r = mk("div", "mv"),
                   mb = (a, k) => {
@@ -2369,6 +2519,252 @@
           ];
         }
         const PS = { fit: null, a4: [595, 842], letter: [612, 792] };
+        function edit(i, f) {
+          const r = f._r || 0,
+            W = i.naturalWidth || i.width || 1024,
+            H = i.naturalHeight || i.height || 1024,
+            q = r % 180,
+            a = document.createElement("canvas");
+          a.width = q ? H : W;
+          a.height = q ? W : H;
+          const x = a.getContext("2d");
+          x.translate(a.width / 2, a.height / 2);
+          x.rotate((r * Math.PI) / 180);
+          x.drawImage(i, -W / 2, -H / 2, W, H);
+          const c = f._c;
+          if (!c) return a;
+          const b = document.createElement("canvas");
+          b.width = Math.max(1, Math.round(c.w * a.width));
+          b.height = Math.max(1, Math.round(c.h * a.height));
+          b.getContext("2d").drawImage(
+            a,
+            Math.round(c.x * a.width),
+            Math.round(c.y * a.height),
+            b.width,
+            b.height,
+            0,
+            0,
+            b.width,
+            b.height,
+          );
+          return b;
+        }
+        async function refresh(f) {
+          if (!f._r && !f._c) {
+            f._p = f._d = null;
+            return;
+          }
+          const i = await load(f),
+            cv = edit(i, f),
+            s = Math.min(1, 700 / Math.max(cv.width, cv.height)),
+            p = document.createElement("canvas");
+          p.width = Math.max(1, Math.round(cv.width * s));
+          p.height = Math.max(1, Math.round(cv.height * s));
+          p.getContext("2d").drawImage(cv, 0, 0, p.width, p.height);
+          f._d = cv.width + "×" + cv.height;
+          f._p = url(await new Promise((r) => p.toBlob(r, "image/png")));
+        }
+        async function cropper(f, q) {
+          const L = files.filter((x) => x.type.startsWith("image/")),
+            ix = L.indexOf(f),
+            im = await load(f),
+            bg = mk("div", "mod"),
+            bx = mk("div", "mbox"),
+            cw = mk("div", "cw"),
+            cr = mk("div", "cr"),
+            cl = (n, a, b) => Math.max(a, Math.min(b, n));
+          let r = f._r || 0,
+            g = edit(im, { _r: r }),
+            c = f._c ? { ...f._c } : { x: 0.08, y: 0.08, w: 0.84, h: 0.84 },
+            d = null,
+            dirty = 0;
+          const kd = (e) => {
+              if (e.key === "Escape") close();
+              else if (e.key === "ArrowRight" && ix < L.length - 1) go(1);
+              else if (e.key === "ArrowLeft" && ix > 0) go(-1);
+              else if (e.key === "Enter" && e.target.tagName !== "BUTTON") ok();
+            },
+            close = () => {
+              bg.remove();
+              document.removeEventListener("keydown", kd);
+            },
+            draw = () => {
+              cr.style.cssText =
+                "left:" +
+                c.x * 100 +
+                "%;top:" +
+                c.y * 100 +
+                "%;width:" +
+                c.w * 100 +
+                "%;height:" +
+                c.h * 100 +
+                "%";
+            };
+          const fit = (a) => {
+            dirty = 1;
+            const W = g.width,
+              H = g.height;
+            let w = 0.84,
+              h = a ? (w * W) / (a * H) : 0.84;
+            if (h > 0.84) {
+              h = 0.84;
+              w = (h * a * H) / W;
+            }
+            c = { x: (1 - w) / 2, y: (1 - h) / 2, w, h };
+            draw();
+          };
+          const rot = (k) => {
+            r = (r + k + 360) % 360;
+            const ng = edit(im, { _r: r });
+            cw.replaceChild(ng, g);
+            g = ng;
+            fit(0);
+          };
+          const btn = (t, fn) => {
+            const b = mk("button", "sm clay", t);
+            b.type = "button";
+            b.onclick = fn;
+            return b;
+          };
+          cw.append(g, cr);
+          ["nw", "ne", "sw", "se"].forEach((k) => {
+            const h = document.createElement("i");
+            h.dataset.k = k;
+            cr.append(h);
+          });
+          const pt = (e) => {
+            const q = cw.getBoundingClientRect();
+            return [
+              (e.clientX - q.left) / q.width,
+              (e.clientY - q.top) / q.height,
+            ];
+          };
+          cr.onpointerdown = (e) => {
+            e.preventDefault();
+            cr.setPointerCapture(e.pointerId);
+            const [px, py] = pt(e);
+            d = { k: e.target.dataset.k || "m", px, py, o: { ...c } };
+          };
+          cr.onpointermove = (e) => {
+            if (!d) return;
+            dirty = 1;
+            const [px, py] = pt(e),
+              dx = px - d.px,
+              dy = py - d.py,
+              o = d.o;
+            if (d.k === "m") {
+              c.x = cl(o.x + dx, 0, 1 - o.w);
+              c.y = cl(o.y + dy, 0, 1 - o.h);
+            } else {
+              let x1 = o.x,
+                y1 = o.y,
+                x2 = o.x + o.w,
+                y2 = o.y + o.h;
+              if (d.k.includes("w")) x1 = cl(x1 + dx, 0, x2 - 0.05);
+              else x2 = cl(x2 + dx, x1 + 0.05, 1);
+              if (d.k.includes("n")) y1 = cl(y1 + dy, 0, y2 - 0.05);
+              else y2 = cl(y2 + dy, y1 + 0.05, 1);
+              c = { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+            }
+            draw();
+          };
+          cr.onpointerup = cr.onpointercancel = () => {
+            d = null;
+          };
+          const row = mk("div", "mrow"),
+            row2 = mk("div", "mrow");
+          row.append(
+            btn("⟲ Left", () => rot(-90)),
+            btn("⟳ Right", () => rot(90)),
+          );
+          [
+            ["Free", 0],
+            ["1:1", 1],
+            ["4:3", 4 / 3],
+            ["A4", 1 / 1.414],
+          ].forEach(([t, a]) => row.append(btn(t, () => fit(a))));
+          const save = async (force) => {
+              if (!force && !dirty) return;
+              f._r = r;
+              f._c = c.w > 0.97 && c.h > 0.97 ? null : { ...c };
+              await refresh(f);
+            },
+            go = async (k) => {
+              await save();
+              chips();
+              await cropper(L[ix + k], 1);
+              close();
+            },
+            ok = async () => {
+              await save(1);
+              chips();
+              if (ix < L.length - 1) {
+                await cropper(L[ix + 1], 1);
+              }
+              close();
+            };
+          const nav = mk("div", "mrow");
+          if (L.length > 1) {
+            nav.append(
+              btn("‹ Prev", () => go(-1)),
+              mk("span", "cnt", "Picture " + (ix + 1) + " of " + L.length),
+              btn("Next ›", () => go(1)),
+              (() => {
+                const t = btn("✓", async () => {
+                  await save(1);
+                  chips();
+                  toast("Crop applied ✓");
+                  t.classList.add("ok");
+                  setTimeout(() => t.classList.remove("ok"), 700);
+                });
+                t.setAttribute("aria-label", "Apply this crop");
+                t.title = "Apply this crop";
+                t.className += " tick";
+                return t;
+              })(),
+            );
+            nav.children[0].disabled = ix < 1;
+            nav.children[2].disabled = ix >= L.length - 1;
+          }
+          row2.append(
+            btn("Cancel", close),
+            ...(f._r || f._c
+              ? [
+                  btn("Undo edits", async () => {
+                    f._r = 0;
+                    f._c = null;
+                    await refresh(f);
+                    close();
+                    chips();
+                  }),
+                ]
+              : []),
+            btn(
+              L.length > 1 && ix < L.length - 1 ? "Apply & next ›" : "Apply",
+              ok,
+            ),
+          );
+          bx.append(
+            mk("h2", "", "Crop & rotate"),
+            nav,
+            mk(
+              "p",
+              "hint",
+              "Drag the box to move it, drag the round corners to resize. Use Prev/Next or the ← → keys to switch pictures, and Enter to apply.",
+            ),
+            cw,
+            row,
+            row2,
+          );
+          bg.append(bx);
+          bg.onclick = (e) => {
+            if (e.target === bg) close();
+          };
+          if (q) bg.style.animation = "none";
+          document.addEventListener("keydown", kd);
+          document.body.append(bg);
+          draw();
+        }
         function enhance(a, w, h, bw) {
           const n = w * h,
             hi = new Uint32Array(256);
@@ -2441,10 +2837,11 @@
             }
         }
         async function mkPage(f, o) {
-          const i = await load(f),
-            k = +o.scale,
-            w = Math.round((i.naturalWidth || 1024) * k),
-            h = Math.round((i.naturalHeight || 1024) * k);
+          let i = await load(f);
+          if (f._r || f._c) i = edit(i, f);
+          const k = +o.scale,
+            w = Math.round((i.naturalWidth || i.width || 1024) * k),
+            h = Math.round((i.naturalHeight || i.height || 1024) * k);
           if (w * h > 1.2e8) throw 0;
           const c = document.createElement("canvas");
           c.width = w;
@@ -2611,9 +3008,10 @@
             if (cur === "image" || cur === "shrink") {
               for (const f of files) {
                 try {
-                  const i = await load(f),
-                    W = i.naturalWidth || 1024,
-                    H = i.naturalHeight || 1024;
+                  let i = await load(f);
+                  if (f._r || f._c) i = edit(i, f);
+                  const W = i.naturalWidth || i.width || 1024,
+                    H = i.naturalHeight || i.height || 1024;
                   let fm = o.fmt,
                     r;
                   if (fm === "smart") {
