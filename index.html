@@ -1586,6 +1586,31 @@
         display: grid;
         animation: pop 0.2s;
       }
+      .qv {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .qv polygon {
+        fill: rgba(255, 255, 255, 0.14);
+        stroke: #fff;
+        stroke-width: 2;
+        stroke-dasharray: 6 4;
+        vector-effect: non-scaling-stroke;
+      }
+      .qh {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        margin: -15px 0 0 -15px;
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+        background: var(--c1);
+        cursor: grab;
+        touch-action: none;
+      }
       @media (prefers-reduced-motion: reduce) {
         * {
           animation: none !important;
@@ -2132,7 +2157,7 @@
                 tb.append(
                   eb("⟳", "Rotate 90 degrees", () => {
                     f._r = ((f._r || 0) + 90) % 360;
-                    f._c = null;
+                    f._c = f._q = null;
                     refresh(f).then(chips);
                   }),
                   eb("✂ Crop", "Crop and rotate", () => cropper(f)),
@@ -2621,6 +2646,82 @@
           ];
         }
         const PS = { fit: null, a4: [595, 842], letter: [612, 792] };
+        function warp(a, Q) {
+          const W = a.width,
+            H = a.height,
+            P = Q.map((p) => [p[0] * W, p[1] * H]),
+            ds = (u, v) => Math.hypot(u[0] - v[0], u[1] - v[1]);
+          let w = (ds(P[0], P[1]) + ds(P[3], P[2])) / 2,
+            h = (ds(P[0], P[3]) + ds(P[1], P[2])) / 2;
+          const sc = Math.min(1, 4000 / Math.max(w, h, 1));
+          w = Math.max(1, Math.round(w * sc));
+          h = Math.max(1, Math.round(h * sc));
+          const D = [
+              [0, 0],
+              [w, 0],
+              [w, h],
+              [0, h],
+            ],
+            A = [],
+            B = [];
+          for (let i = 0; i < 4; i++) {
+            const [x, y] = D[i],
+              [u, v] = P[i];
+            A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]);
+            B.push(u);
+            A.push([0, 0, 0, x, y, 1, -v * x, -v * y]);
+            B.push(v);
+          }
+          for (let i = 0; i < 8; i++) {
+            let m = i;
+            for (let r = i + 1; r < 8; r++)
+              if (Math.abs(A[r][i]) > Math.abs(A[m][i])) m = r;
+            [A[i], A[m]] = [A[m], A[i]];
+            [B[i], B[m]] = [B[m], B[i]];
+            for (let r = i + 1; r < 8; r++) {
+              const f = A[r][i] / A[i][i];
+              for (let c = i; c < 8; c++) A[r][c] -= f * A[i][c];
+              B[r] -= f * B[i];
+            }
+          }
+          const K = new Array(8);
+          for (let i = 7; i >= 0; i--) {
+            let t = B[i];
+            for (let c = i + 1; c < 8; c++) t -= A[i][c] * K[c];
+            K[i] = t / A[i][i];
+          }
+          const S = a.getContext("2d").getImageData(0, 0, W, H).data,
+            o = document.createElement("canvas");
+          o.width = w;
+          o.height = h;
+          const ox = o.getContext("2d"),
+            O = ox.createImageData(w, h),
+            T = O.data;
+          for (let y = 0; y < h; y++)
+            for (let x = 0; x < w; x++) {
+              const z = K[6] * x + K[7] * y + 1,
+                u = (K[0] * x + K[1] * y + K[2]) / z,
+                v = (K[3] * x + K[4] * y + K[5]) / z,
+                x0 = Math.floor(u),
+                y0 = Math.floor(v),
+                fx = u - x0,
+                fy = v - y0,
+                i = (y * w + x) * 4;
+              if (x0 < 0 || y0 < 0 || x0 >= W - 1 || y0 >= H - 1) continue;
+              const p = (y0 * W + x0) * 4,
+                p2 = p + 4,
+                p3 = p + W * 4,
+                p4 = p3 + 4;
+              for (let c = 0; c < 4; c++)
+                T[i + c] =
+                  S[p + c] * (1 - fx) * (1 - fy) +
+                  S[p2 + c] * fx * (1 - fy) +
+                  S[p3 + c] * (1 - fx) * fy +
+                  S[p4 + c] * fx * fy;
+            }
+          ox.putImageData(O, 0, 0);
+          return o;
+        }
         function edit(i, f) {
           const r = f._r || 0,
             W = i.naturalWidth || i.width || 1024,
@@ -2633,6 +2734,7 @@
           x.translate(a.width / 2, a.height / 2);
           x.rotate((r * Math.PI) / 180);
           x.drawImage(i, -W / 2, -H / 2, W, H);
+          if (f._q) return warp(a, f._q);
           const c = f._c;
           if (!c) return a;
           const b = document.createElement("canvas");
@@ -2652,7 +2754,7 @@
           return b;
         }
         async function refresh(f) {
-          if (!f._r && !f._c && !f._k) {
+          if (!f._r && !f._c && !f._q && !f._k) {
             f._p = f._d = null;
             return;
           }
@@ -2674,7 +2776,7 @@
           f._d = cv.width + "×" + cv.height;
           f._p = url(await new Promise((r) => p.toBlob(r, "image/png")));
         }
-        async function cropper(f, q) {
+        async function cropper(f, quiet) {
           const L = files.filter((x) => x.type.startsWith("image/")),
             ix = L.indexOf(f),
             im = await load(f),
@@ -2711,6 +2813,7 @@
                 "%;height:" +
                 c.h * 100 +
                 "%";
+              if (qm) cr.style.display = "none";
             };
           const show = () => {
             const b = edit(im, { _r: r }),
@@ -2739,7 +2842,9 @@
               w = (h * a * H) / W;
             }
             c = { x: (1 - w) / 2, y: (1 - h) / 2, w, h };
+            qm = false;
             draw();
+            mode();
           };
           const rot = (k) => {
             r = (r + k + 360) % 360;
@@ -2747,6 +2852,13 @@
             cw.replaceChild(ng, g);
             g = ng;
             fit(0);
+            q = [
+              [0.1, 0.1],
+              [0.9, 0.1],
+              [0.9, 0.9],
+              [0.1, 0.9],
+            ];
+            qd();
           };
           const btn = (t, fn) => {
             const b = mk("button", "sm clay", t);
@@ -2754,7 +2866,64 @@
             b.onclick = fn;
             return b;
           };
-          cw.append(g, cr);
+          const NS = "http://www.w3.org/2000/svg",
+            qv = document.createElementNS(NS, "svg"),
+            pg = document.createElementNS(NS, "polygon");
+          qv.setAttribute("viewBox", "0 0 100 100");
+          qv.setAttribute("preserveAspectRatio", "none");
+          qv.setAttribute("class", "qv");
+          qv.append(pg);
+          let qm = !!f._q,
+            q = f._q
+              ? f._q.map((p) => p.slice())
+              : [
+                  [0.1, 0.1],
+                  [0.9, 0.1],
+                  [0.9, 0.9],
+                  [0.1, 0.9],
+                ];
+          const qh = [0, 1, 2, 3].map((j) => {
+              const h = mk("i", "qh");
+              h.onpointerdown = (e) => {
+                e.preventDefault();
+                h.setPointerCapture(e.pointerId);
+                h._d = 1;
+              };
+              h.onpointermove = (e) => {
+                if (!h._d) return;
+                dirty = 1;
+                const [px, py] = pt(e);
+                q[j] = [cl(px, 0.03, 0.97), cl(py, 0.03, 0.97)];
+                qd();
+              };
+              h.onpointerup = h.onpointercancel = () => {
+                h._d = 0;
+              };
+              return h;
+            }),
+            qd = () => {
+              pg.setAttribute(
+                "points",
+                q.map((p) => p[0] * 100 + "," + p[1] * 100).join(" "),
+              );
+              qh.forEach((h, j) => {
+                h.style.left = q[j][0] * 100 + "%";
+                h.style.top = q[j][1] * 100 + "%";
+              });
+            },
+            fc = btn("✥ Free corners", () => {
+              qm = !qm;
+              dirty = 1;
+              mode();
+            }),
+            mode = () => {
+              cr.style.display = qm ? "none" : "";
+              qv.style.display = qm ? "" : "none";
+              qh.forEach((h) => (h.style.display = qm ? "" : "none"));
+              fc.classList.toggle("on", qm);
+              qd();
+            };
+          cw.append(g, cr, qv, ...qh);
           ["nw", "ne", "sw", "se"].forEach((k) => {
             const h = document.createElement("i");
             h.dataset.k = k;
@@ -2804,6 +2973,7 @@
           row.append(
             btn("⟲ Left", () => rot(-90)),
             btn("⟳ Right", () => rot(90)),
+            fc,
           );
           [
             ["Free", 0],
@@ -2814,7 +2984,13 @@
           const save = async (force) => {
               if (!force && !dirty && !lt) return;
               f._r = r;
-              f._c = c.w > 0.97 && c.h > 0.97 ? null : { ...c };
+              if (qm) {
+                f._q = q.map((p) => p.slice());
+                f._c = null;
+              } else {
+                f._q = null;
+                f._c = c.w > 0.97 && c.h > 0.97 ? null : { ...c };
+              }
               if (lt) f._k = lk;
               await refresh(f);
             },
@@ -2901,11 +3077,11 @@
           nav.append(xb);
           row2.append(
             btn("Cancel", close),
-            ...(f._r || f._c
+            ...(f._r || f._c || f._q
               ? [
                   btn("Undo edits", async () => {
                     f._r = 0;
-                    f._c = null;
+                    f._c = f._q = null;
                     await refresh(f);
                     close();
                     chips();
@@ -2924,7 +3100,7 @@
             mk(
               "p",
               "hint",
-              "Drag the box to move it, drag the round corners to resize. Use Prev/Next or the ← → keys to switch pictures, and Enter to apply.",
+              "Drag the box to move it, drag the round corners to resize. Use Free corners to straighten a page photographed at an angle. Use Prev/Next or the ← → keys to switch pictures, and Enter to apply.",
             ),
             cw,
             row,
@@ -2935,12 +3111,110 @@
           bg.onclick = (e) => {
             if (e.target === bg) close();
           };
-          if (q) bg.style.animation = "none";
+          if (quiet) bg.style.animation = "none";
           document.addEventListener("keydown", kd);
           document.body.append(bg);
           draw();
+          mode();
         }
         function enhance(a, w, h, bw) {
+          const s = Math.max(1, Math.floor(Math.max(w, h) / 320)),
+            sw = Math.ceil(w / s),
+            sh = Math.ceil(h / s),
+            nc = bw ? 1 : 3,
+            n = sw * sh,
+            m = [],
+            cnt = new Float32Array(n);
+          for (let c = 0; c < nc; c++) m.push(new Float32Array(n));
+          for (let y = 0; y < h; y++) {
+            const row = ((y / s) | 0) * sw;
+            for (let x = 0; x < w; x++) {
+              const j = row + ((x / s) | 0),
+                i = (y * w + x) * 4;
+              cnt[j]++;
+              if (bw)
+                m[0][j] += a[i] * 0.299 + a[i + 1] * 0.587 + a[i + 2] * 0.114;
+              else {
+                m[0][j] += a[i];
+                m[1][j] += a[i + 1];
+                m[2][j] += a[i + 2];
+              }
+            }
+          }
+          for (const ch of m) for (let j = 0; j < n; j++) ch[j] /= cnt[j] || 1;
+          const rd = Math.max(2, Math.round(sw / 45)),
+            rb = Math.max(3, Math.round(sw / 18));
+          const sep = (src, fn) => {
+            const t = new Float32Array(n),
+              o = new Float32Array(n);
+            for (let y = 0; y < sh; y++) fn(src, t, y * sw, 1, sw);
+            for (let x = 0; x < sw; x++) fn(t, o, x, sw, sh);
+            return o;
+          };
+          const mx = (r) => (S, D, o, st, len) => {
+            for (let k = 0; k < len; k++) {
+              let v = 0;
+              for (let d = -r; d <= r; d++) {
+                const q = Math.min(len - 1, Math.max(0, k + d)),
+                  e = S[o + q * st];
+                if (e > v) v = e;
+              }
+              D[o + k * st] = v;
+            }
+          };
+          const bx = (r) => (S, D, o, st, len) => {
+            let acc = 0;
+            for (let d = -r; d <= r; d++)
+              acc += S[o + Math.min(len - 1, Math.max(0, d)) * st];
+            for (let k = 0; k < len; k++) {
+              D[o + k * st] = acc / (2 * r + 1);
+              acc +=
+                S[o + Math.min(len - 1, k + r + 1) * st] -
+                S[o + Math.max(0, k - r) * st];
+            }
+          };
+          const bgm = m.map((ch) => sep(sep(sep(ch, mx(rd)), bx(rb)), bx(rb)));
+          const sm = (M, fx, fy) => {
+            const x0 = Math.max(0, Math.min(sw - 1, Math.floor(fx))),
+              y0 = Math.max(0, Math.min(sh - 1, Math.floor(fy))),
+              x1 = Math.min(sw - 1, x0 + 1),
+              y1 = Math.min(sh - 1, y0 + 1),
+              tx = Math.max(0, Math.min(1, fx - x0)),
+              ty = Math.max(0, Math.min(1, fy - y0));
+            return (
+              (M[y0 * sw + x0] * (1 - tx) + M[y0 * sw + x1] * tx) * (1 - ty) +
+              (M[y1 * sw + x0] * (1 - tx) + M[y1 * sw + x1] * tx) * ty
+            );
+          };
+          const sg = (t) => 1 / (1 + Math.exp(-14 * (t - 0.72))),
+            s0 = sg(0),
+            s1 = sg(1),
+            C = new Uint8Array(256);
+          for (let v = 0; v < 256; v++) {
+            const t = Math.min(1, v / 238);
+            C[v] = bw
+              ? (255 * (sg(t) - s0)) / (s1 - s0)
+              : 255 * (t * 0.6 + t * t * (3 - 2 * t) * 0.4);
+          }
+          for (let y = 0; y < h; y++) {
+            const fy = (y + 0.5) / s - 0.5;
+            for (let x = 0; x < w; x++) {
+              const fx = (x + 0.5) / s - 0.5,
+                i = (y * w + x) * 4;
+              if (bw) {
+                const g = a[i] * 0.299 + a[i + 1] * 0.587 + a[i + 2] * 0.114,
+                  b = Math.max(40, sm(bgm[0], fx, fy)),
+                  v = C[Math.min(255, ((g * 255) / b) | 0)];
+                a[i] = a[i + 1] = a[i + 2] = v;
+              } else
+                for (let c = 0; c < 3; c++) {
+                  const b = Math.max(40, sm(bgm[c], fx, fy));
+                  a[i + c] = C[Math.min(255, ((a[i + c] * 255) / b) | 0)];
+                }
+            }
+          }
+        }
+        function enhanceOld(a, w, h, bw) {
           const n = w * h,
             hi = new Uint32Array(256);
           for (let i = 0; i < n; i++)
@@ -3013,7 +3287,7 @@
         }
         async function mkPage(f, o) {
           let i = await load(f);
-          if (f._r || f._c) i = edit(i, f);
+          if (f._r || f._c || f._q) i = edit(i, f);
           const k = +o.scale,
             w = Math.round((i.naturalWidth || i.width || 1024) * k),
             h = Math.round((i.naturalHeight || i.height || 1024) * k);
@@ -3184,7 +3458,7 @@
               for (const f of files) {
                 try {
                   let i = await load(f);
-                  if (f._r || f._c) i = edit(i, f);
+                  if (f._r || f._c || f._q) i = edit(i, f);
                   const W = i.naturalWidth || i.width || 1024,
                     H = i.naturalHeight || i.height || 1024;
                   let fm = o.fmt,
