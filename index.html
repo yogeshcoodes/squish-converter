@@ -1489,6 +1489,13 @@
       #toast {
         z-index: 70;
       }
+      .mbox .cross {
+        min-width: 48px;
+        padding: 6px 12px;
+        font-size: 1.4rem;
+        line-height: 1;
+        background: var(--c1);
+      }
       @media (prefers-reduced-motion: reduce) {
         * {
           animation: none !important;
@@ -2726,6 +2733,20 @@
             nav.children[0].disabled = ix < 1;
             nav.children[2].disabled = ix >= L.length - 1;
           }
+          const rm = async () => {
+              const j = files.indexOf(f);
+              if (j > -1) files.splice(j, 1);
+              chips();
+              toast("Picture removed");
+              const n = L.filter((x) => x !== f);
+              if (n.length) await cropper(n[Math.min(ix, n.length - 1)], 1);
+              close();
+            },
+            xb = btn("✕", rm);
+          xb.className += " cross";
+          xb.title = "Remove this picture";
+          xb.setAttribute("aria-label", "Remove this picture");
+          nav.append(xb);
           row2.append(
             btn("Cancel", close),
             ...(f._r || f._c
